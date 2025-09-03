@@ -6,6 +6,7 @@
     <title>Absen Masuk - Karyawan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
@@ -260,7 +261,29 @@
         // Handle absen button click
         document.getElementById('absenBtn').addEventListener('click', async function() {
             if (!photoTaken || !locationObtained || !currentPhotoData) {
-                showStatus('Data tidak lengkap. Pastikan foto dan lokasi sudah diambil.', 'error');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Data Tidak Lengkap!',
+                    text: 'Pastikan foto dan lokasi sudah diambil sebelum absen.',
+                    confirmButtonText: 'Baik',
+                    confirmButtonColor: '#ff040c'
+                });
+                return;
+            }
+            
+            // Show confirmation dialog
+            const confirmResult = await Swal.fire({
+                icon: 'question',
+                title: 'Konfirmasi Absen Masuk',
+                text: 'Apakah Anda yakin ingin absen masuk sekarang?',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Absen Sekarang',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#ff040c',
+                cancelButtonColor: '#6b7280'
+            });
+            
+            if (!confirmResult.isConfirmed) {
                 return;
             }
 
@@ -270,12 +293,28 @@
             absenBtn.disabled = true;
             absenBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
             
+            // Show loading state
+            Swal.fire({
+                title: 'Memproses Absensi...',
+                html: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
             // Get coordinates from location text
             const locationText = document.getElementById('locationText').textContent;
             const coordsMatch = locationText.match(/Lat-Long : ([\d.-]+), ([\d.-]+)/);
             
             if (!coordsMatch) {
-                showStatus('Koordinat lokasi tidak valid', 'error');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Lokasi Tidak Valid!',
+                    text: 'Koordinat lokasi tidak dapat dibaca. Pastikan GPS aktif dan coba lagi.',
+                    confirmButtonText: 'Coba Lagi',
+                    confirmButtonColor: '#ff040c'
+                });
                 absenBtn.disabled = false;
                 absenBtn.innerHTML = '<i class="fas fa-camera mr-2"></i>Absen Masuk';
                 return;
@@ -299,7 +338,12 @@
             console.log('Foto length:', currentPhotoData.length);
             
             try {
-                const response = await fetch('{{ route("test.absen.masuk") }}', {
+                // Use the actual absen masuk route for production, test route for development
+                const route = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
+                    ? '{{ route("test.absen.masuk") }}' 
+                    : '{{ route("karyawan.absen.masuk.post") }}';
+                
+                const response = await fetch(route, {
                     method: 'POST',
                     body: formData
                 });
@@ -307,24 +351,65 @@
                 const result = await response.json();
                 console.log('Response:', result);
                 
+                // Close loading state
+                Swal.close();
+                
                 if (result.success) {
-                    showStatus('Test berhasil! ' + result.message, 'success');
-                    // Show radius info
-                    if (result.data) {
-                        const info = result.data;
-                        showStatus(`Test berhasil! Jarak: ${info.calculated_distance}m, Radius: ${info.office_radius}m, Dalam radius: ${info.within_radius ? 'Ya' : 'Tidak'}`, 'success');
-                    }
-                    setTimeout(() => {
-                        window.location.href = '{{ route("karyawan.dashboard") }}';
-                    }, 3000);
+                    // Get current time for attendance
+                    const now = new Date();
+                    const attendanceTime = now.toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    // Show success alert with attendance time
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Absensi Berhasil!',
+                        html: `
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600 mb-2">✓</div>
+                                <p class="text-lg font-semibold text-gray-800 mb-2">Selamat datang!</p>
+                                <p class="text-sm text-gray-600 mb-1">Anda berhasil absen masuk pada:</p>
+                                <p class="text-xl font-bold text-blue-600">${attendanceTime}</p>
+                                <div class="mt-3 p-2 bg-gray-100 rounded-lg text-xs">
+                                    <p class="text-gray-600">Jarak: ${result.data?.calculated_distance || 'N/A'}m</p>
+                                    <p class="text-gray-600">Radius: ${result.data?.office_radius || 'N/A'}m</p>
+                                    <p class="text-gray-600">Status: ${result.data?.within_radius ? 'Dalam radius' : 'Luar radius'}</p>
+                                </div>
+                            </div>
+                        `,
+                        confirmButtonText: 'Lanjut ke Dashboard',
+                        confirmButtonColor: '#ff040c',
+                        allowOutsideClick: false,
+                        showCloseButton: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route("karyawan.dashboard") }}';
+                        }
+                    });
                 } else {
-                    showStatus(result.message, 'error');
+                    // Show error alert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Absensi Gagal!',
+                        text: result.message,
+                        confirmButtonText: 'Coba Lagi',
+                        confirmButtonColor: '#ff040c'
+                    });
                     absenBtn.disabled = false;
                     absenBtn.innerHTML = '<i class="fas fa-camera mr-2"></i>Absen Masuk';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showStatus('Terjadi kesalahan. Silakan coba lagi.', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan!',
+                    text: 'Silakan coba lagi atau hubungi administrator.',
+                    confirmButtonText: 'Coba Lagi',
+                    confirmButtonColor: '#ff040c'
+                });
                 absenBtn.disabled = false;
                 absenBtn.innerHTML = '<i class="fas fa-camera mr-2"></i>Absen Masuk';
             }

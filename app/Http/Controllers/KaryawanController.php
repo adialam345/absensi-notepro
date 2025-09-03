@@ -149,9 +149,8 @@ class KaryawanController extends Controller
             'tanggal' => $today,
             'jam_masuk' => $jamSekarang->format('H:i:s'),
             'status' => $status,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'foto' => $fotoPath,
+            'foto_masuk' => $fotoPath,
+            'lokasi_masuk' => $request->latitude . ',' . $request->longitude,
             'keterangan' => $request->keterangan
         ]);
         
@@ -221,9 +220,8 @@ class KaryawanController extends Controller
         $absensi->update([
             'jam_pulang' => Carbon::now()->format('H:i:s'),
             'foto_pulang' => $fotoPulangPath,
-            'latitude_pulang' => $request->latitude,
-            'longitude_pulang' => $request->longitude,
-            'keterangan_pulang' => $request->keterangan
+            'lokasi_pulang' => $request->latitude . ',' . $request->longitude,
+            'keterangan' => $request->keterangan
         ]);
         
         return response()->json([
