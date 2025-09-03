@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Absensi;
 use App\Models\IzinCuti;
 use App\Models\LokasiKantor;
+use App\Helpers\LocationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -350,15 +351,13 @@ class KaryawanController extends Controller
         
         return redirect()->route('karyawan.profile')->with('success', 'Profil berhasil diupdate');
     }
-    
+
+    /**
+     * Calculate distance between two points using Haversine formula
+     * Returns distance in meters
+     */
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
-        $theta = $lon1 - $lon2;
-        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + 
-                cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-        $dist = acos($dist);
-        $dist = rad2deg($dist);
-        $miles = $dist * 60 * 1.1515;
-        return $miles * 1609.344; // Convert to meters
+        return LocationHelper::calculateDistance($lat1, $lon1, $lat2, $lon2);
     }
 }

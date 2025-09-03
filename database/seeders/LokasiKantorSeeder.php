@@ -37,6 +37,14 @@ class LokasiKantorSeeder extends Seeder
                 'radius' => 120,
                 'status' => 'aktif',
             ],
+            [
+                'nama_lokasi' => 'Kantor Test - Radius Besar',
+                'alamat' => 'Lokasi Test dengan Radius Besar',
+                'latitude' => -7.6528390,
+                'longitude' => 111.5339200,
+                'radius' => 500,
+                'status' => 'aktif',
+            ],
         ];
 
         foreach ($lokasiKantor as $lokasi) {
