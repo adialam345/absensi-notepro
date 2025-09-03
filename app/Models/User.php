@@ -19,8 +19,14 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'jabatan',
+        'jam_kerja',
+        'role',
+        'status',
+        'lokasi_kantor_id',
     ];
 
     /**
@@ -44,5 +50,53 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the lokasi kantor that owns the user.
+     */
+    public function lokasiKantor()
+    {
+        return $this->belongsTo(LokasiKantor::class);
+    }
+
+    /**
+     * Get the absensi for the user.
+     */
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class);
+    }
+
+    /**
+     * Get the izin cuti for the user.
+     */
+    public function izinCuti()
+    {
+        return $this->hasMany(IzinCuti::class);
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is karyawan
+     */
+    public function isKaryawan()
+    {
+        return $this->role === 'karyawan';
+    }
+
+    /**
+     * Check if user is active
+     */
+    public function isActive()
+    {
+        return $this->status === 'aktif';
     }
 }
