@@ -80,7 +80,7 @@ class KaryawanController extends Controller
         $validator = Validator::make($request->all(), [
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+            'foto' => 'required|string|starts_with:data:image/'
         ]);
         
         if ($validator->fails()) {
@@ -125,8 +125,22 @@ class KaryawanController extends Controller
             $status = 'terlambat';
         }
         
-        // Handle photo upload
-        $fotoPath = $request->file('foto')->store('absensi', 'public');
+        // Handle base64 photo data
+        $fotoData = $request->foto;
+        $fotoPath = null;
+        
+        if (strpos($fotoData, 'data:image/') === 0) {
+            // Extract base64 data
+            $base64Data = explode(',', $fotoData)[1];
+            $imageData = base64_decode($base64Data);
+            
+            // Generate unique filename
+            $filename = 'absensi_' . $user->id . '_' . time() . '.jpg';
+            $fotoPath = 'absensi/' . $filename;
+            
+            // Save to storage
+            \Storage::disk('public')->put($fotoPath, $imageData);
+        }
         
         // Create attendance record
         $absensi = Absensi::create([
@@ -174,7 +188,7 @@ class KaryawanController extends Controller
         $validator = Validator::make($request->all(), [
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+            'foto' => 'required|string|starts_with:data:image/'
         ]);
         
         if ($validator->fails()) {
@@ -185,8 +199,22 @@ class KaryawanController extends Controller
             ]);
         }
         
-        // Handle photo upload
-        $fotoPulangPath = $request->file('foto')->store('absensi', 'public');
+        // Handle base64 photo data
+        $fotoData = $request->foto;
+        $fotoPulangPath = null;
+        
+        if (strpos($fotoData, 'data:image/') === 0) {
+            // Extract base64 data
+            $base64Data = explode(',', $fotoData)[1];
+            $imageData = base64_decode($base64Data);
+            
+            // Generate unique filename
+            $filename = 'absensi_pulang_' . $user->id . '_' . time() . '.jpg';
+            $fotoPulangPath = 'absensi/' . $filename;
+            
+            // Save to storage
+            \Storage::disk('public')->put($fotoPulangPath, $imageData);
+        }
         
         // Update attendance record
         $absensi->update([

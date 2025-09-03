@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absen Masuk - Karyawan</title>
+    <title>Test Absen Masuk - Karyawan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -15,7 +15,7 @@
                 <a href="{{ route('karyawan.dashboard') }}" class="text-white">
                     <i class="fas fa-arrow-left text-lg"></i>
                 </a>
-                <span class="font-semibold text-sm">Absen Masuk</span>
+                <span class="font-semibold text-sm">Test Absen Masuk</span>
             </div>
         </div>
     </div>
@@ -23,8 +23,51 @@
     <!-- Content -->
     <div class="p-4">
         <div class="max-w-md mx-auto">
-            <!-- Camera Preview -->
+            <!-- Debug Info -->
+            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded mb-4 text-xs">
+                <strong>Test Mode:</strong> Form sederhana untuk debug submission
+            </div>
+
+            <!-- Simple Test Form -->
             <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Test Form</h3>
+                
+                <form id="testForm" class="space-y-3">
+                    @csrf
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Latitude</label>
+                        <input type="text" id="testLat" name="latitude" value="-6.2088" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Longitude</label>
+                        <input type="text" id="testLng" name="longitude" value="106.8456" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Foto (Base64)</label>
+                        <textarea id="testFoto" name="foto" rows="3" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            placeholder="Data base64 foto akan muncul di sini..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Keterangan</label>
+                        <input type="text" name="keterangan" value="Test keterangan" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    </div>
+                    
+                    <button type="submit" 
+                        class="w-full bg-[#ff040c] text-white py-3 rounded-xl font-semibold hover:bg-[#fb0302] transition-colors text-sm">
+                        <i class="fas fa-paper-plane mr-2"></i>Test Submit
+                    </button>
+                </form>
+            </div>
+
+            <!-- Camera Preview (Hidden for test) -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-4 hidden">
                 <h3 class="text-sm font-semibold text-gray-800 mb-3">Foto Absen</h3>
                 <div class="relative">
                     <video id="camera" class="w-full h-64 bg-gray-100 rounded-lg" autoplay></video>
@@ -42,163 +85,51 @@
                 </div>
             </div>
 
-            <!-- Form -->
-            <form id="absenForm" class="bg-white rounded-xl shadow-sm p-4">
-                @csrf
-                <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude">
-                <input type="hidden" id="photoData" name="foto">
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan (Opsional)</label>
-                    <textarea name="keterangan" rows="3" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c]"
-                        placeholder="Tambahkan keterangan jika diperlukan..."></textarea>
-                </div>
-
-                <!-- Location Info -->
-                <div class="mb-4 p-3 bg-blue-50 rounded-lg">
-                    <div class="flex items-center space-x-2 text-blue-700">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span class="text-sm" id="locationText">Mendapatkan lokasi...</span>
-                    </div>
-                </div>
-
-                <button type="submit" id="submitBtn" disabled
-                    class="w-full bg-[#ff040c] text-white py-3 rounded-xl font-semibold hover:bg-[#fb0302] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="fas fa-check mr-2"></i>Absen Masuk
-                </button>
-            </form>
-
             <!-- Status Messages -->
-            <div id="statusMessage" class="hidden mt-4 p-3 rounded-lg"></div>
+            <div id="statusMessage" class="hidden mt-4 p-3 rounded-lg text-sm"></div>
         </div>
     </div>
 
     <script>
-        let stream = null;
-        let photoTaken = false;
-        let locationObtained = false;
-
-        // Initialize camera
-        async function initCamera() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'user',
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    } 
-                });
-                document.getElementById('camera').srcObject = stream;
-            } catch (err) {
-                console.error('Error accessing camera:', err);
-                showStatus('Tidak dapat mengakses kamera', 'error');
-            }
+        // Generate fake base64 photo data
+        function generateFakePhoto() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw a simple colored rectangle
+            ctx.fillStyle = '#ff040c';
+            ctx.fillRect(0, 0, 100, 100);
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.fillText('TEST', 20, 60);
+            
+            return canvas.toDataURL('image/jpeg');
         }
 
-        // Get location
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        
-                        document.getElementById('latitude').value = lat;
-                        document.getElementById('longitude').value = lng;
-                        document.getElementById('locationText').textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
-                        
-                        locationObtained = true;
-                        checkFormReady();
-                    },
-                    function(error) {
-                        console.error('Error getting location:', error);
-                        document.getElementById('locationText').textContent = 'Tidak dapat mendapatkan lokasi';
-                        showStatus('Tidak dapat mendapatkan lokasi. Pastikan izin lokasi diaktifkan.', 'error');
-                    }
-                );
-            } else {
-                document.getElementById('locationText').textContent = 'Geolokasi tidak didukung';
-                showStatus('Browser tidak mendukung geolokasi', 'error');
-            }
-        }
+        // Set fake photo data
+        document.getElementById('testFoto').value = generateFakePhoto();
 
-        // Capture photo
-        document.getElementById('captureBtn').addEventListener('click', function() {
-            const video = document.getElementById('camera');
-            const canvas = document.getElementById('canvas');
-            const photoPreview = document.getElementById('photoPreview');
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            const photoData = canvas.toDataURL('image/jpeg');
-            document.getElementById('photoData').value = photoData;
-            
-            // Show photo preview
-            photoPreview.style.backgroundImage = `url(${photoData})`;
-            photoPreview.classList.remove('hidden');
-            video.classList.add('hidden');
-            
-            // Show retake button
-            document.getElementById('captureBtn').classList.add('hidden');
-            document.getElementById('retakeBtn').classList.remove('hidden');
-            
-            photoTaken = true;
-            checkFormReady();
-        });
-
-        // Retake photo
-        document.getElementById('retakeBtn').addEventListener('click', function() {
-            const video = document.getElementById('camera');
-            const photoPreview = document.getElementById('photoPreview');
-            
-            photoPreview.classList.add('hidden');
-            video.classList.remove('hidden');
-            
-            document.getElementById('captureBtn').classList.remove('hidden');
-            document.getElementById('retakeBtn').classList.add('hidden');
-            
-            photoTaken = false;
-            checkFormReady();
-        });
-
-        // Check if form is ready
-        function checkFormReady() {
-            const submitBtn = document.getElementById('submitBtn');
-            if (photoTaken && locationObtained) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
-            }
-        }
-
-        // Show status message
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.className = `mt-4 p-3 rounded-lg ${
-                type === 'error' ? 'bg-red-100 text-red-700 border border-red-400' : 
-                type === 'success' ? 'bg-green-100 text-green-700 border border-green-400' : 
-                'bg-blue-100 text-blue-700 border border-blue-400'
-            }`;
-            statusDiv.textContent = message;
-            statusDiv.classList.remove('hidden');
-        }
-
-        // Handle form submission
-        document.getElementById('absenForm').addEventListener('submit', async function(e) {
+        // Handle test form submission
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            console.log('Test form submitted!');
             
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+            const formData = new FormData(this);
+            
+            // Debug: Log form data
+            console.log('Form Data:');
+            for (let [key, value] of formData.entries()) {
+                if (key === 'foto') {
+                    console.log(key + ':', value.substring(0, 50) + '...');
+                } else {
+                    console.log(key + ':', value);
+                }
+            }
             
             try {
-                const formData = new FormData(this);
-                
-                const response = await fetch('{{ route("karyawan.absen.masuk") }}', {
+                const response = await fetch('{{ route("test.absen") }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -207,30 +138,30 @@
                 });
                 
                 const result = await response.json();
+                console.log('Response:', result);
                 
                 if (result.success) {
-                    showStatus(result.message, 'success');
-                    setTimeout(() => {
-                        window.location.href = '{{ route("karyawan.dashboard") }}';
-                    }, 2000);
+                    showStatus('Test berhasil! Data terkirim: ' + JSON.stringify(result.data), 'success');
                 } else {
                     showStatus(result.message, 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Absen Masuk';
                 }
             } catch (error) {
                 console.error('Error:', error);
                 showStatus('Terjadi kesalahan. Silakan coba lagi.', 'error');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Absen Masuk';
             }
         });
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            initCamera();
-            getLocation();
-        });
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `mt-4 p-3 rounded-lg text-sm ${
+                type === 'error' ? 'bg-red-100 text-red-700 border border-red-400' : 
+                type === 'success' ? 'bg-green-100 text-green-700 border border-green-400' : 
+                'bg-blue-100 text-blue-700 border border-blue-400'
+            }`;
+            statusDiv.textContent = message;
+            statusDiv.classList.remove('hidden');
+        }
     </script>
 </body>
 </html>
