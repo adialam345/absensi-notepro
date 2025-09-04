@@ -73,16 +73,6 @@
             </form>
         </div>
 
-        <!-- History Pengajuan -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-xl font-bold mb-4" style="color: #ff040c;">History Pengajuan</h2>
-            <div id="historyContainer">
-                <div class="text-center text-gray-500 py-8">
-                    <i class="fas fa-inbox text-2xl mb-2"></i>
-                    <p>Belum ada pengajuan izin/cuti</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -91,9 +81,6 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('tanggal_mulai').min = today;
             document.getElementById('tanggal_selesai').min = today;
-            
-            // Load history
-            loadHistory();
         });
 
         // Update end date minimum when start date changes
@@ -142,8 +129,6 @@
                     }).then(() => {
                         // Reset form
                         document.getElementById('izinCutiForm').reset();
-                        // Reload history
-                        loadHistory();
                     });
                 } else {
                     Swal.fire({
@@ -167,79 +152,6 @@
             }
         });
 
-        // Load history
-        async function loadHistory() {
-            try {
-                const response = await fetch('{{ route("karyawan.izin.cuti.history") }}');
-                const result = await response.json();
-                
-                if (result.success) {
-                    displayHistory(result.data);
-                } else {
-                    // Keep default message if no data
-                    console.log('No history data available');
-                }
-            } catch (error) {
-                console.error('Error loading history:', error);
-                // Keep default message on error
-            }
-        }
-
-        // Display history
-        function displayHistory(data) {
-            if (data.length === 0) {
-                document.getElementById('historyContainer').innerHTML = `
-                    <div class="text-center text-gray-500 py-8">
-                        <i class="fas fa-inbox text-2xl mb-2"></i>
-                        <p>Belum ada pengajuan izin/cuti</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const historyHTML = data.map(item => {
-                const statusColors = {
-                    'pending': 'bg-yellow-100 text-yellow-800',
-                    'disetujui': 'bg-green-100 text-green-800',
-                    'ditolak': 'bg-red-100 text-red-800'
-                };
-                
-                const statusIcons = {
-                    'pending': 'fas fa-clock',
-                    'disetujui': 'fas fa-check',
-                    'ditolak': 'fas fa-times'
-                };
-
-                return `
-                    <div class="border border-gray-200 rounded-lg p-4 mb-4">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="font-semibold text-gray-900">${item.jenis.charAt(0).toUpperCase() + item.jenis.slice(1)}</h3>
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColors[item.status]}">
-                                        <i class="${statusIcons[item.status]} mr-1"></i>
-                                        ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                                    </span>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-1">
-                                    <i class="fas fa-calendar mr-2"></i>
-                                    ${item.tanggal_mulai} - ${item.tanggal_selesai}
-                                </p>
-                                <p class="text-sm text-gray-600">
-                                    <i class="fas fa-comment mr-2"></i>
-                                    ${item.alasan}
-                                </p>
-                            </div>
-                            <div class="text-right text-sm text-gray-500">
-                                <p>${new Date(item.created_at).toLocaleDateString('id-ID')}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('historyContainer').innerHTML = historyHTML;
-        }
     </script>
 </body>
 </html>

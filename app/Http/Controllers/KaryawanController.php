@@ -34,9 +34,23 @@ class KaryawanController extends Controller
             ->get();
         
         $hadir = $monthlyAbsensi->where('status', 'hadir')->count();
-        $izin = $monthlyAbsensi->where('status', 'izin')->count();
-        $sakit = $monthlyAbsensi->where('status', 'sakit')->count();
         $terlambat = $monthlyAbsensi->where('status', 'terlambat')->count();
+        
+        // Get approved leave/permit requests for current month
+        $monthlyIzinCuti = IzinCuti::where('user_id', $user->id)
+            ->where('status', 'disetujui')
+            ->where(function($query) use ($currentMonth, $currentYear) {
+                $query->whereMonth('tanggal_mulai', $currentMonth)
+                      ->whereYear('tanggal_mulai', $currentYear)
+                      ->orWhere(function($q) use ($currentMonth, $currentYear) {
+                          $q->whereMonth('tanggal_selesai', $currentMonth)
+                            ->whereYear('tanggal_selesai', $currentYear);
+                      });
+            })
+            ->get();
+        
+        $izin = $monthlyIzinCuti->where('tipe', 'izin')->count();
+        $sakit = $monthlyIzinCuti->where('tipe', 'sakit')->count();
         
         // Get last week attendance
         $lastWeek = Absensi::where('user_id', $user->id)
