@@ -199,18 +199,46 @@ class AdminController extends Controller
     {
         $query = Absensi::with('user');
         
-        if ($request->filled('tanggal')) {
-            $query->whereDate('tanggal', $request->tanggal);
+        // Filter berdasarkan bulan dan tahun
+        if ($request->filled('month') && $request->filled('year')) {
+            $query->whereMonth('tanggal', $request->month)
+                  ->whereYear('tanggal', $request->year);
+        } elseif ($request->filled('month')) {
+            $query->whereMonth('tanggal', $request->month);
+        } elseif ($request->filled('year')) {
+            $query->whereYear('tanggal', $request->year);
         }
         
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+        // Filter berdasarkan karyawan
+        if ($request->filled('karyawan')) {
+            $query->where('user_id', $request->karyawan);
         }
         
-        $absensi = $query->latest()->paginate(20);
-        $users = User::where('role', 'karyawan')->get();
+        $absensi = $query->latest('tanggal')->paginate(20);
+        $karyawan = User::where('role', 'karyawan')->get();
         
-        return view('admin.laporan.absensi', compact('absensi', 'users'));
+        // Hitung summary
+        $summaryQuery = Absensi::query();
+        if ($request->filled('month') && $request->filled('year')) {
+            $summaryQuery->whereMonth('tanggal', $request->month)
+                        ->whereYear('tanggal', $request->year);
+        } elseif ($request->filled('month')) {
+            $summaryQuery->whereMonth('tanggal', $request->month);
+        } elseif ($request->filled('year')) {
+            $summaryQuery->whereYear('tanggal', $request->year);
+        }
+        if ($request->filled('karyawan')) {
+            $summaryQuery->where('user_id', $request->karyawan);
+        }
+        
+        $summary = [
+            'hadir' => $summaryQuery->where('status', 'hadir')->count(),
+            'terlambat' => $summaryQuery->where('status', 'terlambat')->count(),
+            'izin' => $summaryQuery->where('status', 'izin')->count(),
+            'sakit' => $summaryQuery->where('status', 'sakit')->count(),
+        ];
+        
+        return view('admin.laporan.absensi', compact('absensi', 'karyawan', 'summary'));
     }
 
     // Kelola Cuti & Izin
