@@ -101,6 +101,15 @@ class KaryawanController extends Controller
             ]);
         }
         
+        // Log coordinates for debugging
+        \Log::info('Absen Masuk Debug', [
+            'user_id' => $user->id,
+            'user_coords' => [$request->latitude, $request->longitude],
+            'office_coords' => [$lokasiKantor->latitude, $lokasiKantor->longitude],
+            'office_radius' => $lokasiKantor->radius,
+            'request_data' => $request->all()
+        ]);
+        
         // Calculate distance
         $distance = $this->calculateDistance(
             $request->latitude,
@@ -109,11 +118,26 @@ class KaryawanController extends Controller
             $lokasiKantor->longitude
         );
         
+        // Log distance calculation
+        \Log::info('Distance Calculation', [
+            'calculated_distance' => $distance,
+            'office_radius' => $lokasiKantor->radius,
+            'within_radius' => $distance <= $lokasiKantor->radius
+        ]);
+        
         if ($distance > $lokasiKantor->radius) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda berada di luar area kantor'
-            ]);
+                    return response()->json([
+            'success' => false,
+            'message' => 'Anda berada di luar area kantor. Jarak: ' . round($distance, 2) . 'm, Radius: ' . $lokasiKantor->radius . 'm',
+            'data' => [
+                'calculated_distance' => round($distance, 2),
+                'office_radius' => $lokasiKantor->radius,
+                'within_radius' => false,
+                'user_coords' => [$request->latitude, $request->longitude],
+                'office_coords' => [$lokasiKantor->latitude, $lokasiKantor->longitude],
+                'status' => 'Luar radius'
+            ]
+        ]);
         }
         
         // Check if late
@@ -157,7 +181,15 @@ class KaryawanController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Absen masuk berhasil',
-            'data' => $absensi
+            'data' => [
+                'absensi' => $absensi,
+                'calculated_distance' => round($distance, 2),
+                'office_radius' => $lokasiKantor->radius,
+                'within_radius' => true,
+                'user_coords' => [$request->latitude, $request->longitude],
+                'office_coords' => [$lokasiKantor->latitude, $lokasiKantor->longitude],
+                'status' => 'Dalam radius'
+            ]
         ]);
     }
     
@@ -227,7 +259,10 @@ class KaryawanController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Absen pulang berhasil',
-            'data' => $absensi
+            'data' => [
+                'absensi' => $absensi,
+                'status' => 'Absen pulang berhasil'
+            ]
         ]);
     }
     
@@ -348,6 +383,30 @@ class KaryawanController extends Controller
         $user->update($data);
         
         return redirect()->route('karyawan.profile')->with('success', 'Profil berhasil diupdate');
+    }
+
+    /**
+     * Get current attendance data for real-time updates
+     */
+    public function getCurrentAttendance()
+    {
+        $user = Auth::user();
+        $today = Carbon::today();
+        
+        // Get today's attendance
+        $todayAbsensi = Absensi::where('user_id', $user->id)
+            ->whereDate('tanggal', $today)
+            ->first();
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'jam_masuk' => $todayAbsensi ? $todayAbsensi->jam_masuk : null,
+                'jam_pulang' => $todayAbsensi ? $todayAbsensi->jam_pulang : null,
+                'status' => $todayAbsensi ? $todayAbsensi->status : null,
+                'has_attendance' => $todayAbsensi ? true : false
+            ]
+        ]);
     }
 
     /**

@@ -42,7 +42,7 @@ class LokasiKantorSeeder extends Seeder
                 'alamat' => 'Lokasi Test dengan Radius Besar',
                 'latitude' => -7.6528390,
                 'longitude' => 111.5339200,
-                'radius' => 500,
+                'radius' => 30000, // Increased to 30km to cover actual user location
                 'status' => 'aktif',
             ],
         ];

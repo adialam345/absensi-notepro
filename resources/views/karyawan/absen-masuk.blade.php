@@ -10,11 +10,11 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#2196F3] p-3 text-white">
+    <div class="bg-[#ff040c] p-3 text-white">
         <div class="flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <div class="w-6 h-6 bg-white rounded flex items-center justify-center">
-                    <div class="w-3 h-3 bg-[#2196F3] transform rotate-45"></div>
+                    <div class="w-3 h-3 bg-[#ff040c] transform rotate-45"></div>
                 </div>
                 <span class="font-semibold text-sm">ABSEN PROJECT</span>
             </div>
@@ -31,7 +31,7 @@
             
             <!-- Tabs -->
             <div class="flex border-b border-gray-200 mb-4">
-                <button class="flex-1 py-2 px-4 text-center border-b-2 border-[#2196F3] text-[#2196F3] font-medium text-sm">
+                <button class="flex-1 py-2 px-4 text-center border-b-2 border-[#ff040c] text-[#ff040c] font-medium text-sm">
                     Kantor
                 </button>
                 <button class="flex-1 py-2 px-4 text-center text-gray-500 font-medium text-sm">
@@ -54,10 +54,7 @@
             <!-- Geolocation Data -->
             <div class="text-center mb-4">
                 <p class="text-gray-500 text-sm" id="locationText">
-                    Lat-Long : Mendapatkan lokasi...
-                </p>
-                <p class="text-gray-500 text-xs mt-1" id="statusText">
-                    Model selesai dimuat.
+                    Mendapatkan lokasi...
                 </p>
             </div>
 
@@ -74,7 +71,7 @@
                     
                     <!-- Camera Controls -->
                     <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                        <button id="captureBtn" class="bg-[#2196F3] text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors">
+                        <button id="captureBtn" class="bg-[#ff040c] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#fb0302] transition-colors">
                             <i class="fas fa-camera mr-1"></i>Ambil Foto
                         </button>
                         <button id="retakeBtn" class="hidden bg-gray-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors">
@@ -86,17 +83,16 @@
 
             <!-- Absen Button -->
             <button id="absenBtn" disabled
-                class="w-full bg-[#2196F3] text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fas fa-camera mr-2"></i>Absen Masuk
+                class="w-full bg-[#ff040c] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#fb0302] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-camera mr-2"></i><span id="absenButtonText">Absen Masuk</span>
             </button>
-
-            <!-- Debug Info (Hidden in production) -->
-            <div class="mt-4 p-3 bg-gray-100 rounded-lg text-xs hidden" id="debugInfo">
-                <div><strong>Latitude:</strong> <span id="debugLat">-</span></div>
-                <div><strong>Longitude:</strong> <span id="debugLng">-</span></div>
-                <div><strong>Photo Taken:</strong> <span id="debugPhoto">No</span></div>
-                <div><strong>Form Ready:</strong> <span id="debugFormReady">No</span></div>
+            
+            <!-- Status Absensi Hari Ini -->
+            <div id="todayStatus" class="mt-4 p-3 bg-gray-50 rounded-lg text-center hidden">
+                <p class="text-sm text-gray-600 mb-1">Status Absensi Hari Ini:</p>
+                <div id="statusInfo" class="text-sm font-medium"></div>
             </div>
+
         </div>
     </div>
 
@@ -108,6 +104,8 @@
         let photoTaken = false;
         let locationObtained = false;
         let currentPhotoData = null;
+        let todayAbsensi = null;
+        let absenType = 'masuk'; // 'masuk' atau 'pulang'
 
         // Update greeting based on time
         function updateGreeting() {
@@ -165,24 +163,23 @@
                         
                         console.log('Location obtained:', lat, lng);
                         
-                        // Update location display
-                        document.getElementById('locationText').textContent = `Lat-Long : ${lat.toFixed(7)}, ${lng.toFixed(7)}`;
+                        // Store location data
+                        window.currentLocation = { lat: lat, lng: lng };
                         
-                        // Update debug info
-                        document.getElementById('debugLat').textContent = lat.toFixed(7);
-                        document.getElementById('debugLng').textContent = lng.toFixed(7);
+                        // Update location display
+                        document.getElementById('locationText').textContent = `Lokasi berhasil didapatkan`;
                         
                         locationObtained = true;
                         checkFormReady();
                     },
                     function(error) {
                         console.error('Error getting location:', error);
-                        document.getElementById('locationText').textContent = 'Lat-Long : Tidak dapat mendapatkan lokasi';
+                        document.getElementById('locationText').textContent = 'Tidak dapat mendapatkan lokasi';
                         showStatus('Tidak dapat mendapatkan lokasi. Pastikan izin lokasi diaktifkan.', 'error');
                     }
                 );
             } else {
-                document.getElementById('locationText').textContent = 'Lat-Long : Geolokasi tidak didukung';
+                document.getElementById('locationText').textContent = 'Geolokasi tidak didukung';
                 showStatus('Browser tidak mendukung geolokasi', 'error');
             }
         }
@@ -213,13 +210,30 @@
             document.getElementById('captureBtn').classList.add('hidden');
             document.getElementById('retakeBtn').classList.remove('hidden');
             
-            // Update debug info
-            document.getElementById('debugPhoto').textContent = 'Yes';
-            
             photoTaken = true;
             checkFormReady();
         });
 
+        // Reset form after successful absen
+        function resetForm() {
+            // Reset camera
+            const video = document.getElementById('camera');
+            const photoPreview = document.getElementById('photoPreview');
+            
+            photoPreview.classList.add('hidden');
+            video.classList.remove('hidden');
+            
+            document.getElementById('captureBtn').classList.remove('hidden');
+            document.getElementById('retakeBtn').classList.add('hidden');
+            
+            // Clear photo data
+            currentPhotoData = null;
+            photoTaken = false;
+            
+            // Re-enable button if needed
+            checkFormReady();
+        }
+        
         // Retake photo
         document.getElementById('retakeBtn').addEventListener('click', function() {
             console.log('Retaking photo...');
@@ -235,9 +249,6 @@
             // Clear photo data
             currentPhotoData = null;
             
-            // Update debug info
-            document.getElementById('debugPhoto').textContent = 'No';
-            
             photoTaken = false;
             checkFormReady();
         });
@@ -251,41 +262,55 @@
             
             if (isReady) {
                 absenBtn.disabled = false;
-                document.getElementById('debugFormReady').textContent = 'Yes';
             } else {
                 absenBtn.disabled = true;
-                document.getElementById('debugFormReady').textContent = 'No';
             }
         }
 
-        // Handle absen button click
-        document.getElementById('absenBtn').addEventListener('click', async function() {
-            if (!photoTaken || !locationObtained || !currentPhotoData) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Data Tidak Lengkap!',
-                    text: 'Pastikan foto dan lokasi sudah diambil sebelum absen.',
-                    confirmButtonText: 'Baik',
-                    confirmButtonColor: '#ff040c'
+                    // Handle absen button click
+            document.getElementById('absenBtn').addEventListener('click', async function() {
+                if (!photoTaken || !locationObtained || !currentPhotoData) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Data Tidak Lengkap!',
+                        text: 'Pastikan foto dan lokasi sudah diambil sebelum absen.',
+                        confirmButtonText: 'Baik',
+                        confirmButtonColor: '#ff040c'
+                    });
+                    return;
+                }
+                
+                // Check if already completed today
+                if (absenType === 'complete') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Absensi Selesai',
+                        text: 'Anda sudah absen masuk dan pulang hari ini.',
+                        confirmButtonText: 'Baik',
+                        confirmButtonColor: '#ff040c'
+                    });
+                    return;
+                }
+                
+                // Show confirmation dialog
+                const confirmTitle = absenType === 'masuk' ? 'Konfirmasi Absen Masuk' : 'Konfirmasi Absen Pulang';
+                const confirmText = absenType === 'masuk' ? 'Apakah Anda yakin ingin absen masuk sekarang?' : 'Apakah Anda yakin ingin absen pulang sekarang?';
+                const confirmButtonText = absenType === 'masuk' ? 'Ya, Absen Masuk' : 'Ya, Absen Pulang';
+                
+                const confirmResult = await Swal.fire({
+                    icon: 'question',
+                    title: confirmTitle,
+                    text: confirmText,
+                    showCancelButton: true,
+                    confirmButtonText: confirmButtonText,
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#ff040c',
+                    cancelButtonColor: '#6b7280'
                 });
-                return;
-            }
-            
-            // Show confirmation dialog
-            const confirmResult = await Swal.fire({
-                icon: 'question',
-                title: 'Konfirmasi Absen Masuk',
-                text: 'Apakah Anda yakin ingin absen masuk sekarang?',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Absen Sekarang',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#ff040c',
-                cancelButtonColor: '#6b7280'
-            });
-            
-            if (!confirmResult.isConfirmed) {
-                return;
-            }
+                
+                if (!confirmResult.isConfirmed) {
+                    return;
+                }
 
             console.log('Submitting absen...');
             
@@ -303,11 +328,8 @@
                 }
             });
             
-            // Get coordinates from location text
-            const locationText = document.getElementById('locationText').textContent;
-            const coordsMatch = locationText.match(/Lat-Long : ([\d.-]+), ([\d.-]+)/);
-            
-            if (!coordsMatch) {
+            // Get coordinates from stored location data
+            if (!window.currentLocation) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Lokasi Tidak Valid!',
@@ -320,8 +342,8 @@
                 return;
             }
             
-            const latitude = coordsMatch[1];
-            const longitude = coordsMatch[2];
+            const latitude = window.currentLocation.lat;
+            const longitude = window.currentLocation.lng;
             
             // Create form data
             const formData = new FormData();
@@ -338,10 +360,13 @@
             console.log('Foto length:', currentPhotoData.length);
             
             try {
-                // Use the actual absen masuk route for production, test route for development
-                const route = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
-                    ? '{{ route("test.absen.masuk") }}' 
-                    : '{{ route("karyawan.absen.masuk.post") }}';
+                // Use the appropriate route based on absen type
+                let route;
+                if (absenType === 'masuk') {
+                    route = '{{ route("karyawan.absen.masuk.post") }}';
+                } else if (absenType === 'pulang') {
+                    route = '{{ route("karyawan.absen.pulang") }}';
+                }
                 
                 const response = await fetch(route, {
                     method: 'POST',
@@ -355,29 +380,44 @@
                 Swal.close();
                 
                 if (result.success) {
-                    // Get current time for attendance
-                    const now = new Date();
-                    const attendanceTime = now.toLocaleTimeString('id-ID', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
+                    // Get current time for attendance (use server time from response if available)
+                    let attendanceTime;
+                    if (result.data?.absensi?.jam_masuk) {
+                        // Use server time from database
+                        attendanceTime = result.data.absensi.jam_masuk;
+                    } else if (result.data?.absensi?.jam_pulang) {
+                        // Use server time from database
+                        attendanceTime = result.data.absensi.jam_pulang;
+                    } else {
+                        // Fallback to local time
+                        const now = new Date();
+                        attendanceTime = now.toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                    }
                     
                     // Show success alert with attendance time
+                    const successTitle = absenType === 'masuk' ? 'Absen Masuk Berhasil!' : 'Absen Pulang Berhasil!';
+                    const successMessage = absenType === 'masuk' ? 'Selamat datang!' : 'Selamat pulang!';
+                    
                     Swal.fire({
                         icon: 'success',
-                        title: 'Absensi Berhasil!',
+                        title: successTitle,
                         html: `
                             <div class="text-center">
                                 <div class="text-2xl font-bold text-green-600 mb-2">✓</div>
-                                <p class="text-lg font-semibold text-gray-800 mb-2">Selamat datang!</p>
-                                <p class="text-sm text-gray-600 mb-1">Anda berhasil absen masuk pada:</p>
+                                <p class="text-lg font-semibold text-gray-800 mb-2">${successMessage}</p>
+                                <p class="text-sm text-gray-600 mb-1">Anda berhasil absen ${absenType} pada:</p>
                                 <p class="text-xl font-bold text-blue-600">${attendanceTime}</p>
+                                ${absenType === 'masuk' ? `
                                 <div class="mt-3 p-2 bg-gray-100 rounded-lg text-xs">
                                     <p class="text-gray-600">Jarak: ${result.data?.calculated_distance || 'N/A'}m</p>
                                     <p class="text-gray-600">Radius: ${result.data?.office_radius || 'N/A'}m</p>
                                     <p class="text-gray-600">Status: ${result.data?.within_radius ? 'Dalam radius' : 'Luar radius'}</p>
                                 </div>
+                                ` : ''}
                             </div>
                         `,
                         confirmButtonText: 'Lanjut ke Dashboard',
@@ -386,6 +426,7 @@
                         showCloseButton: false
                     }).then((result) => {
                         if (result.isConfirmed) {
+                            // Redirect to dashboard
                             window.location.href = '{{ route("karyawan.dashboard") }}';
                         }
                     });
@@ -427,6 +468,67 @@
             statusDiv.classList.remove('hidden');
         }
 
+        // Check today's attendance status
+        async function checkTodayAttendance() {
+            try {
+                const response = await fetch('{{ route("karyawan.attendance.current") }}');
+                const result = await response.json();
+                
+                if (result.success) {
+                    todayAbsensi = result.data;
+                    updateAbsenButton();
+                    updateStatusDisplay();
+                }
+            } catch (error) {
+                console.error('Error checking attendance:', error);
+            }
+        }
+        
+        // Update absen button based on attendance status
+        function updateAbsenButton() {
+            const absenBtn = document.getElementById('absenBtn');
+            const buttonText = document.getElementById('absenButtonText');
+            
+            if (!todayAbsensi || !todayAbsensi.has_attendance) {
+                // Belum absen sama sekali
+                absenType = 'masuk';
+                buttonText.textContent = 'Absen Masuk';
+                absenBtn.className = 'w-full bg-[#2196F3] text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+            } else if (todayAbsensi.jam_masuk && !todayAbsensi.jam_pulang) {
+                // Sudah absen masuk, belum pulang
+                absenType = 'pulang';
+                buttonText.textContent = 'Absen Pulang';
+                absenBtn.className = 'w-full bg-[#fb0302] text-white py-4 rounded-xl font-bold text-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+            } else if (todayAbsensi.jam_masuk && todayAbsensi.jam_pulang) {
+                // Sudah absen masuk dan pulang
+                absenType = 'complete';
+                buttonText.textContent = 'Absensi Selesai';
+                absenBtn.disabled = true;
+                absenBtn.className = 'w-full bg-gray-400 text-white py-4 rounded-xl font-bold text-lg cursor-not-allowed';
+            }
+        }
+        
+        // Update status display
+        function updateStatusDisplay() {
+            const statusDiv = document.getElementById('todayStatus');
+            const statusInfo = document.getElementById('statusInfo');
+            
+            if (!todayAbsensi || !todayAbsensi.jam_masuk) {
+                statusDiv.classList.add('hidden');
+                return;
+            }
+            
+            let statusText = '';
+            if (todayAbsensi.jam_masuk && !todayAbsensi.jam_pulang) {
+                statusText = `✓ Masuk: ${todayAbsensi.jam_masuk} | Belum pulang`;
+            } else if (todayAbsensi.jam_masuk && todayAbsensi.jam_pulang) {
+                statusText = `✓ Masuk: ${todayAbsensi.jam_masuk} | ✓ Pulang: ${todayAbsensi.jam_pulang}`;
+            }
+            
+            statusInfo.textContent = statusText;
+            statusDiv.classList.remove('hidden');
+        }
+        
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, initializing...');
@@ -438,14 +540,13 @@
             // Update time every second
             setInterval(updateTime, 1000);
             
+            // Check today's attendance first
+            checkTodayAttendance();
+            
             // Initialize camera and location
             initCamera();
             getLocation();
             
-            // Show debug info in development
-            if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
-                document.getElementById('debugInfo').classList.remove('hidden');
-            }
         });
     </script>
 </body>

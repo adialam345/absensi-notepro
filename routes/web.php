@@ -5,12 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Test radius checking
@@ -43,59 +39,42 @@ Route::get('/test-radius', function() {
     ]);
 })->name('test.radius');
 
-// Test absen masuk
+// Test user data
+Route::get('/test-user', function() {
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['error' => 'User not authenticated']);
+    }
+    
+    $lokasiKantor = App\Models\LokasiKantor::find($user->lokasi_kantor_id);
+    
+    return response()->json([
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'lokasi_kantor_id' => $user->lokasi_kantor_id,
+            'role' => $user->role
+        ],
+        'lokasi_kantor' => $lokasiKantor ? [
+            'id' => $lokasiKantor->id,
+            'nama_lokasi' => $lokasiKantor->nama_lokasi,
+            'latitude' => $lokasiKantor->latitude,
+            'longitude' => $lokasiKantor->longitude,
+            'radius' => $lokasiKantor->radius
+        ] : null,
+        'today_absensi' => App\Models\Absensi::where('user_id', $user->id)
+            ->whereDate('tanggal', \Carbon\Carbon::today())
+            ->first()
+    ]);
+})->name('test.user');
+
+// Test absen masuk - Actually saves to database
 Route::post('/test-absen-masuk', function(Request $request) {
     try {
-        // Simulate the absen masuk logic
-        $user = Auth::user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User not authenticated'
-            ]);
-        }
-        
-        $lokasiKantor = App\Models\LokasiKantor::find($user->lokasi_kantor_id);
-        if (!$lokasiKantor) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lokasi kantor tidak ditemukan'
-            ]);
-        }
-        
-        // Calculate distance
-        $lat1 = $request->latitude;
-        $lon1 = $request->longitude;
-        $lat2 = $lokasiKantor->latitude;
-        $lon2 = $lokasiKantor->longitude;
-        
-        $latDelta = deg2rad($lat2 - $lat1);
-        $lonDelta = deg2rad($lon2 - $lon1);
-        
-        $a = sin($latDelta / 2) * sin($latDelta / 2) +
-             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-             sin($lonDelta / 2) * sin($lonDelta / 2);
-        
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-        $distance = 6371000 * $c;
-        
-        $withinRadius = $distance <= $lokasiKantor->radius;
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Test successful',
-            'data' => [
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'office_location' => $lokasiKantor->nama_lokasi,
-                'user_coords' => [$lat1, $lon1],
-                'office_coords' => [$lat2, $lon2],
-                'office_radius' => $lokasiKantor->radius,
-                'calculated_distance' => round($distance, 2),
-                'within_radius' => $withinRadius,
-                'request_data' => $request->all()
-            ]
-        ]);
+        // Use the actual controller method to save attendance
+        $controller = new App\Http\Controllers\KaryawanController();
+        return $controller->absenMasuk($request);
         
     } catch (Exception $e) {
         return response()->json([
@@ -119,6 +98,133 @@ Route::get('/test-dashboard', function() {
         'jamPulang' => '17:00'
     ]);
 })->name('test.dashboard');
+
+// Test distance calculation with specific coordinates
+Route::get('/test-distance', function() {
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['error' => 'User not authenticated']);
+    }
+    
+    $lokasiKantor = App\Models\LokasiKantor::find($user->lokasi_kantor_id);
+    if (!$lokasiKantor) {
+        return response()->json(['error' => 'Office location not found']);
+    }
+    
+    // Test coordinates (you can change these)
+    $testLat = -7.6528390; // Test latitude
+    $testLon = 111.5339200; // Test longitude
+    
+    // Calculate distance using LocationHelper
+    $distance = App\Helpers\LocationHelper::calculateDistance(
+        $testLat,
+        $testLon,
+        $lokasiKantor->latitude,
+        $lokasiKantor->longitude
+    );
+    
+    $withinRadius = $distance <= $lokasiKantor->radius;
+    
+    return response()->json([
+        'test_coordinates' => [
+            'latitude' => $testLat,
+            'longitude' => $testLon
+        ],
+        'office_coordinates' => [
+            'latitude' => $lokasiKantor->latitude,
+            'longitude' => $lokasiKantor->longitude
+        ],
+        'office_radius' => $lokasiKantor->radius,
+        'calculated_distance' => round($distance, 2),
+        'within_radius' => $withinRadius,
+        'distance_meters' => round($distance),
+        'distance_km' => round($distance / 1000, 3),
+        'status' => $withinRadius ? 'DALAM RADIUS' : 'LUAR RADIUS'
+    ]);
+})->name('test.distance');
+
+// Test distance with coordinates from request (for debugging)
+Route::post('/test-distance-request', function(Request $request) {
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['error' => 'User not authenticated']);
+    }
+    
+    $lokasiKantor = App\Models\LokasiKantor::find($user->lokasi_kantor_id);
+    if (!$lokasiKantor) {
+        return response()->json(['error' => 'Office location not found']);
+    }
+    
+    // Get coordinates from request
+    $userLat = $request->latitude;
+    $userLon = $request->longitude;
+    
+    if (!$userLat || !$userLon) {
+        return response()->json(['error' => 'Latitude and longitude required']);
+    }
+    
+    // Calculate distance using LocationHelper
+    $distance = App\Helpers\LocationHelper::calculateDistance(
+        $userLat,
+        $userLon,
+        $lokasiKantor->latitude,
+        $lokasiKantor->longitude
+    );
+    
+    $withinRadius = $distance <= $lokasiKantor->radius;
+    
+    return response()->json([
+        'request_coordinates' => [
+            'latitude' => $userLat,
+            'longitude' => $userLon
+        ],
+        'office_coordinates' => [
+            'latitude' => $lokasiKantor->latitude,
+            'longitude' => $lokasiKantor->longitude
+        ],
+        'office_radius' => $lokasiKantor->radius,
+        'calculated_distance' => round($distance, 2),
+        'within_radius' => $withinRadius,
+        'distance_meters' => round($distance),
+        'distance_km' => round($distance / 1000, 3),
+        'status' => $withinRadius ? 'DALAM RADIUS' : 'LUAR RADIUS',
+        'analysis' => [
+            'coordinates_match' => ($userLat == -7.6528390 && $userLon == 111.5339200),
+            'test_coordinates' => [-7.6528390, 111.5339200],
+            'request_coordinates' => [$userLat, $userLon]
+        ]
+    ]);
+})->name('test.distance.request');
+
+// Test distance with actual GPS coordinates from absen attempt
+Route::get('/test-distance-actual', function() {
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['error' => 'User not authenticated']);
+    }
+    
+    $lokasiKantor = App\Models\LokasiKantor::find($user->lokasi_kantor_id);
+    if (!$lokasiKantor) {
+        return response()->json(['error' => 'Office location not found']);
+    }
+    
+    // Use the actual GPS coordinates from the absen attempt
+    // Koordinat akan diambil dari input user saat absen, bukan hardcode
+    
+    // Calculate distance using LocationHelper
+    // Koordinat akan diambil dari input user saat absen
+    // Untuk testing, gunakan koordinat default atau dari database
+    
+    return response()->json([
+        'message' => 'Test route untuk validasi lokasi',
+        'office_coordinates' => [
+            'latitude' => $lokasiKantor->latitude,
+            'longitude' => $lokasiKantor->longitude
+        ],
+        'office_radius' => $lokasiKantor->radius,
+        'note' => 'Koordinat user akan diambil dari GPS device saat absen'
+    ]);
+})->name('test.distance.actual');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -151,6 +257,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::get('/karyawan/dashboard', [App\Http\Controllers\KaryawanController::class, 'dashboard'])->name('karyawan.dashboard');
+    
+    // Get current attendance data (for real-time updates)
+    Route::get('/karyawan/attendance/current', [App\Http\Controllers\KaryawanController::class, 'getCurrentAttendance'])->name('karyawan.attendance.current');
     
     // Attendance Routes
     Route::get('/karyawan/absen/masuk', function () {
