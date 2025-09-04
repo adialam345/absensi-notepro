@@ -95,6 +95,17 @@
                 </div>
                 <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
             </a>
+            
+            <a href="{{ route('admin.cuti.index') }}" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center space-x-3">
+                <div class="w-8 h-8 bg-[#ff040c] rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-times text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-medium text-gray-800 text-sm">Kelola Cuti & Izin</h3>
+                    <p class="text-xs text-gray-500">Setujui/tolak pengajuan cuti karyawan</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+            </a>
         </div>
     </div>
 

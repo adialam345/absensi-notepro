@@ -273,6 +273,7 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
         return view('karyawan.izin-cuti');
     })->name('karyawan.izin.cuti');
     Route::post('/karyawan/izin-cuti', [App\Http\Controllers\KaryawanController::class, 'izinCuti'])->name('karyawan.izin.cuti.post');
+    Route::get('/karyawan/izin-cuti/history', [App\Http\Controllers\KaryawanController::class, 'historyIzinCuti'])->name('karyawan.izin.cuti.history');
     
     // History
     Route::get('/karyawan/history', function () {

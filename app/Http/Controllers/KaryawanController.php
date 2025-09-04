@@ -308,11 +308,11 @@ class KaryawanController extends Controller
         
         $data = [
             'user_id' => $user->id,
-            'jenis' => $request->jenis,
+            'tipe' => $request->jenis,
             'tanggal_mulai' => $request->tanggal_mulai,
             'tanggal_selesai' => $request->tanggal_selesai,
-            'alasan' => $request->alasan,
-            'status' => 'menunggu'
+            'keterangan' => $request->alasan,
+            'status' => 'pending'
         ];
         
         // Handle document upload if provided
@@ -326,6 +326,19 @@ class KaryawanController extends Controller
             'success' => true,
             'message' => 'Pengajuan ' . $request->jenis . ' berhasil dikirim',
             'data' => $izinCuti
+        ]);
+    }
+    
+    public function historyIzinCuti()
+    {
+        $user = Auth::user();
+        $history = IzinCuti::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return response()->json([
+            'success' => true,
+            'data' => $history
         ]);
     }
     

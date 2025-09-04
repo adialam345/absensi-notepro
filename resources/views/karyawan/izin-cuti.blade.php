@@ -3,163 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Izin/Cuti - Karyawan</title>
+    <title>Izin & Cuti - Karyawan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('karyawan.dashboard') }}" class="text-white">
-                    <i class="fas fa-arrow-left text-lg"></i>
-                </a>
-                <span class="font-semibold text-sm">Pengajuan Izin/Cuti</span>
-            </div>
+    <nav class="bg-[#ff040c] p-4 text-white font-bold flex justify-between items-center">
+        <div class="flex items-center space-x-4">
+            <a href="{{ route('karyawan.dashboard') }}" class="hover:text-gray-200">
+                <i class="fas fa-arrow-left mr-2"></i>Kembali ke Dashboard
+            </a>
+            <span>Izin & Cuti</span>
         </div>
-    </div>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="bg-[#fb0302] px-4 py-1 rounded">Logout</button>
+        </form>
+    </nav>
 
-    <!-- Content -->
-    <div class="p-4">
-        <div class="max-w-lg mx-auto">
-            <!-- Form Card -->
-            <div class="bg-white rounded-xl shadow-sm p-4">
-                <h2 class="text-sm font-semibold text-gray-800 mb-4">Form Pengajuan</h2>
-
-                @if($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-xs">
-                        <ul class="list-disc list-inside">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <form id="izinForm" action="{{ route('karyawan.izin.cuti') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Pengajuan</label>
-                        <select name="jenis" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm">
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto mt-6 px-4">
+        <!-- Form Pengajuan Izin/Cuti -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4" style="color: #ff040c;">Ajukan Izin/Cuti</h2>
+            <form id="izinCutiForm">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Jenis</label>
+                        <select id="jenis" name="jenis" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff040c]">
                             <option value="">Pilih Jenis</option>
                             <option value="izin">Izin</option>
                             <option value="cuti">Cuti</option>
                             <option value="sakit">Sakit</option>
                         </select>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
-                            <input type="date" name="tanggal_mulai" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai</label>
-                            <input type="date" name="tanggal_selesai" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm">
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
+                        <input type="date" id="tanggal_mulai" name="tanggal_mulai" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff040c]">
                     </div>
-
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Alasan</label>
-                        <textarea name="alasan" rows="4" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm"
-                            placeholder="Jelaskan alasan pengajuan..."></textarea>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Selesai</label>
+                        <input type="date" id="tanggal_selesai" name="tanggal_selesai" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff040c]">
                     </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Dokumen Pendukung (Opsional)</label>
-                        <input type="file" name="dokumen" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm"
-                            accept=".pdf,.jpg,.jpeg,.png">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dokumen Pendukung</label>
+                        <input type="file" id="dokumen" name="dokumen" accept=".pdf,.jpg,.jpeg,.png" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff040c]">
                         <p class="text-xs text-gray-500 mt-1">Format: PDF, JPG, PNG (Max: 2MB)</p>
                     </div>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Alasan</label>
+                    <textarea id="alasan" name="alasan" rows="4" required 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ff040c]"
+                              placeholder="Jelaskan alasan izin/cuti..."></textarea>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" class="w-full bg-[#ff040c] text-white py-3 rounded-md font-bold hover:bg-[#fb0302] transition-colors">
+                        <i class="fas fa-paper-plane mr-2"></i>Ajukan Izin/Cuti
+                    </button>
+                </div>
+            </form>
+        </div>
 
-                    <div class="flex justify-end space-x-3">
-                        <a href="{{ route('karyawan.dashboard') }}" 
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm">
-                            Batal
-                        </a>
-                        <button type="submit" id="submitBtn"
-                            class="px-4 py-2 bg-[#ff040c] text-white rounded-lg hover:bg-[#fb0302] transition-colors text-sm">
-                            <i class="fas fa-paper-plane mr-1"></i>Kirim Pengajuan
-                        </button>
-                    </div>
-                </form>
+        <!-- History Pengajuan -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-bold mb-4" style="color: #ff040c;">History Pengajuan</h2>
+            <div id="historyContainer">
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-inbox text-2xl mb-2"></i>
+                    <p>Belum ada pengajuan izin/cuti</p>
+                </div>
             </div>
-
-            <!-- Status Messages -->
-            <div id="statusMessage" class="hidden mt-4 p-3 rounded-lg text-sm"></div>
         </div>
     </div>
 
     <script>
         // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.querySelector('input[name="tanggal_mulai"]').min = today;
-        document.querySelector('input[name="tanggal_selesai"]').min = today;
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tanggal_mulai').min = today;
+            document.getElementById('tanggal_selesai').min = today;
+            
+            // Load history
+            loadHistory();
+        });
 
         // Update end date minimum when start date changes
-        document.querySelector('input[name="tanggal_mulai"]').addEventListener('change', function() {
-            document.querySelector('input[name="tanggal_selesai"]').min = this.value;
+        document.getElementById('tanggal_mulai').addEventListener('change', function() {
+            const startDate = this.value;
+            document.getElementById('tanggal_selesai').min = startDate;
         });
 
         // Handle form submission
-        document.getElementById('izinForm').addEventListener('submit', async function(e) {
+        document.getElementById('izinCutiForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const submitBtn = document.getElementById('submitBtn');
-            const originalText = submitBtn.innerHTML;
+            const formData = new FormData(this);
             
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Mengirim...';
+            // Show loading
+            Swal.fire({
+                title: 'Mengirim Pengajuan...',
+                html: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             
             try {
-                const formData = new FormData(this);
-                
-                const response = await fetch('{{ route("karyawan.izin.cuti") }}', {
+                const response = await fetch('{{ route("karyawan.izin.cuti.post") }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                                       document.querySelector('input[name="_token"]').value
                     }
                 });
                 
                 const result = await response.json();
                 
+                Swal.close();
+                
                 if (result.success) {
-                    showStatus(result.message, 'success');
-                    setTimeout(() => {
-                        window.location.href = '{{ route("karyawan.dashboard") }}';
-                    }, 2000);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pengajuan Berhasil!',
+                        text: result.message,
+                        confirmButtonText: 'Baik',
+                        confirmButtonColor: '#ff040c'
+                    }).then(() => {
+                        // Reset form
+                        document.getElementById('izinCutiForm').reset();
+                        // Reload history
+                        loadHistory();
+                    });
                 } else {
-                    showStatus(result.message, 'error');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Pengajuan Gagal!',
+                        text: result.message,
+                        confirmButtonText: 'Coba Lagi',
+                        confirmButtonColor: '#ff040c'
+                    });
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showStatus('Terjadi kesalahan. Silakan coba lagi.', 'error');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan!',
+                    text: 'Silakan coba lagi atau hubungi administrator.',
+                    confirmButtonText: 'Coba Lagi',
+                    confirmButtonColor: '#ff040c'
+                });
             }
         });
 
-        // Show status message
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.className = `mt-4 p-3 rounded-lg text-sm ${
-                type === 'error' ? 'bg-red-100 text-red-700 border border-red-400' : 
-                type === 'success' ? 'bg-green-100 text-green-700 border border-green-400' : 
-                'bg-blue-100 text-blue-700 border border-blue-400'
-            }`;
-            statusDiv.textContent = message;
-            statusDiv.classList.remove('hidden');
+        // Load history
+        async function loadHistory() {
+            try {
+                const response = await fetch('{{ route("karyawan.izin.cuti.history") }}');
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayHistory(result.data);
+                } else {
+                    // Keep default message if no data
+                    console.log('No history data available');
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                // Keep default message on error
+            }
+        }
+
+        // Display history
+        function displayHistory(data) {
+            if (data.length === 0) {
+                document.getElementById('historyContainer').innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <p>Belum ada pengajuan izin/cuti</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const historyHTML = data.map(item => {
+                const statusColors = {
+                    'pending': 'bg-yellow-100 text-yellow-800',
+                    'disetujui': 'bg-green-100 text-green-800',
+                    'ditolak': 'bg-red-100 text-red-800'
+                };
+                
+                const statusIcons = {
+                    'pending': 'fas fa-clock',
+                    'disetujui': 'fas fa-check',
+                    'ditolak': 'fas fa-times'
+                };
+
+                return `
+                    <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h3 class="font-semibold text-gray-900">${item.jenis.charAt(0).toUpperCase() + item.jenis.slice(1)}</h3>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColors[item.status]}">
+                                        <i class="${statusIcons[item.status]} mr-1"></i>
+                                        ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-calendar mr-2"></i>
+                                    ${item.tanggal_mulai} - ${item.tanggal_selesai}
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    <i class="fas fa-comment mr-2"></i>
+                                    ${item.alasan}
+                                </p>
+                            </div>
+                            <div class="text-right text-sm text-gray-500">
+                                <p>${new Date(item.created_at).toLocaleDateString('id-ID')}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('historyContainer').innerHTML = historyHTML;
         }
     </script>
 </body>

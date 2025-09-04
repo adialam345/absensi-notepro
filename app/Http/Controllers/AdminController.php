@@ -242,10 +242,36 @@ class AdminController extends Controller
     }
 
     // Kelola Cuti & Izin
-    public function indexCuti()
+    public function indexCuti(Request $request)
     {
-        $cuti = IzinCuti::with('user')->latest()->paginate(15);
-        return view('admin.cuti.index', compact('cuti'));
+        $query = IzinCuti::with('user');
+        
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter berdasarkan tipe
+        if ($request->filled('tipe')) {
+            $query->where('tipe', $request->tipe);
+        }
+        
+        // Filter berdasarkan karyawan
+        if ($request->filled('karyawan')) {
+            $query->where('user_id', $request->karyawan);
+        }
+        
+        $cuti = $query->latest()->paginate(15);
+        $karyawan = User::where('role', 'karyawan')->get();
+        
+        // Hitung summary
+        $summary = [
+            'pending' => IzinCuti::where('status', 'pending')->count(),
+            'disetujui' => IzinCuti::where('status', 'disetujui')->count(),
+            'ditolak' => IzinCuti::where('status', 'ditolak')->count(),
+        ];
+        
+        return view('admin.cuti.index', compact('cuti', 'karyawan', 'summary'));
     }
 
     public function approveCuti($id)
@@ -253,7 +279,10 @@ class AdminController extends Controller
         $cuti = IzinCuti::findOrFail($id);
         $cuti->update(['status' => 'disetujui']);
         
-        return redirect()->route('admin.cuti.index')->with('success', 'Pengajuan cuti disetujui');
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan cuti disetujui'
+        ]);
     }
 
     public function rejectCuti($id)
@@ -261,7 +290,10 @@ class AdminController extends Controller
         $cuti = IzinCuti::findOrFail($id);
         $cuti->update(['status' => 'ditolak']);
         
-        return redirect()->route('admin.cuti.index')->with('success', 'Pengajuan cuti ditolak');
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan cuti ditolak'
+        ]);
     }
 
     // Export Data
