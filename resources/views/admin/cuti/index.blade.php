@@ -143,7 +143,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500 max-w-xs">
                                     <div class="truncate">{{ $c->keterangan }}</div>
-                                    @if($c->dokumen)
+                                    @if($c->dokumen && $c->dokumen !== '')
                                         <a href="/storage/{{ $c->dokumen }}" target="_blank" 
                                            class="text-[#ff040c] hover:text-[#fb0302] text-xs mt-1 inline-flex items-center">
                                             <i class="fas fa-file-pdf mr-1"></i>Lihat Dokumen
@@ -166,7 +166,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        <button onclick="viewDetail({{ $c->id }}, '{{ $c->user->name }}', '{{ $c->tipe }}', '{{ $c->tanggal_mulai }}', '{{ $c->tanggal_selesai }}', '{{ $c->keterangan }}', '{{ $c->dokumen }}', '{{ $c->status }}')" 
+                                        <button onclick="viewDetail({{ $c->id }}, '{{ $c->user->name }}', '{{ $c->tipe }}', '{{ $c->tanggal_mulai }}', '{{ $c->tanggal_selesai }}', '{{ $c->keterangan }}', '{{ $c->dokumen ?? '' }}', '{{ $c->status }}')" 
                                                 class="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded text-xs">
                                             <i class="fas fa-eye mr-1"></i>Detail
                                         </button>
@@ -284,7 +284,7 @@
             
             // Set dokumen
             const dokumenElement = document.getElementById('detailDokumen');
-            if (dokumen && dokumen !== '') {
+            if (dokumen && dokumen !== '' && dokumen !== 'null' && dokumen !== 'undefined') {
                 const fileExtension = dokumen.split('.').pop().toLowerCase();
                 const iconClass = fileExtension === 'pdf' ? 'fas fa-file-pdf text-red-500' : 'fas fa-file-image text-blue-500';
                 

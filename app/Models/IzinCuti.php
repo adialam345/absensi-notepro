@@ -16,6 +16,7 @@ class IzinCuti extends Model
         'tipe',
         'status',
         'keterangan',
+        'dokumen',
     ];
 
     public function user()
