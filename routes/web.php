@@ -279,8 +279,6 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::get('/karyawan/history', [App\Http\Controllers\KaryawanController::class, 'historyAbsensi'])->name('karyawan.history');
     
     // Profile
-    Route::get('/karyawan/profile', function () {
-        return view('karyawan.profile');
-    })->name('karyawan.profile');
+    Route::get('/karyawan/profile', [App\Http\Controllers\KaryawanController::class, 'profile'])->name('karyawan.profile');
     Route::put('/karyawan/profile', [App\Http\Controllers\KaryawanController::class, 'updateProfile'])->name('karyawan.profile.update');
 });

@@ -22,7 +22,6 @@
             </div>
             <div class="flex items-center space-x-2">
                 <i class="fas fa-bell text-lg"></i>
-                <i class="fas fa-user-circle text-xl"></i>
             </div>
         </div>
     </div>
@@ -45,7 +44,7 @@
 
     <!-- Navigation Icons -->
     <div class="px-4 py-3">
-        <div class="grid grid-cols-6 gap-3">
+        <div class="grid grid-cols-5 gap-3">
             <a href="{{ route('karyawan.absen.masuk') }}" class="text-center">
                 <div class="w-10 h-10 bg-[#ff040c] rounded-xl flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-camera text-white text-sm"></i>
@@ -61,12 +60,6 @@
             <a href="{{ route('karyawan.history') }}" class="text-center">
                 <div class="w-10 h-10 bg-[#ff040c] rounded-xl flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-calendar text-white text-sm"></i>
-                </div>
-                <span class="text-xs text-gray-700">History</span>
-            </a>
-            <a href="{{ route('karyawan.history') }}" class="text-center">
-                <div class="w-10 h-10 bg-[#ff040c] rounded-xl flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-layer-group text-white text-sm"></i>
                 </div>
                 <span class="text-xs text-gray-700">History</span>
             </a>
@@ -88,7 +81,7 @@
     <!-- Attendance Status Cards -->
     <div class="px-4 py-3">
         <div class="grid grid-cols-2 gap-3">
-            <div class="bg-[#ff040c] rounded-xl p-3 text-white" data-attendance="masuk">
+            <div class="{{ $todayAbsensi && $todayAbsensi->jam_masuk ? 'bg-green-600' : 'bg-[#ff040c]' }} rounded-xl p-3 text-white" data-attendance="masuk">
                 <h3 class="font-semibold mb-1 text-sm">Absen Masuk</h3>
                 @if($todayAbsensi && $todayAbsensi->jam_masuk)
                     <p class="text-xs opacity-90" id="jam-masuk">{{ $todayAbsensi->jam_masuk }}</p>
@@ -96,7 +89,7 @@
                     <p class="text-xs opacity-90" id="jam-masuk">Belum absen</p>
                 @endif
             </div>
-            <div class="bg-[#ff040c] rounded-xl p-3 text-white" data-attendance="pulang">
+            <div class="{{ $todayAbsensi && $todayAbsensi->jam_pulang ? 'bg-green-600' : 'bg-[#ff040c]' }} rounded-xl p-3 text-white" data-attendance="pulang">
                 <h3 class="font-semibold mb-1 text-sm">Absen Pulang</h3>
                 @if($todayAbsensi && $todayAbsensi->jam_pulang)
                     <p class="text-xs opacity-90" id="jam-pulang">{{ $todayAbsensi->jam_pulang }}</p>
@@ -190,17 +183,33 @@
                             <span class="text-gray-600">{{ $absensi->jam_pulang ?: '-' }}</span>
                         </div>
                     @endforeach
+                    
+                    @if($lastWeek->count() < 7)
+                        @for($i = $lastWeek->count(); $i < 7; $i++)
+                            <div class="grid grid-cols-3 px-3 py-2 text-xs">
+                                <span class="text-gray-400">-</span>
+                                <span class="text-gray-400">-</span>
+                                <span class="text-gray-400">-</span>
+                            </div>
+                        @endfor
+                    @endif
                 </div>
             @else
-                <div class="p-3 text-center text-gray-500">
-                    <p class="text-xs">Belum ada data absensi</p>
+                <div class="divide-y divide-gray-200">
+                    @for($i = 0; $i < 7; $i++)
+                        <div class="grid grid-cols-3 px-3 py-2 text-xs">
+                            <span class="text-gray-400">-</span>
+                            <span class="text-gray-400">-</span>
+                            <span class="text-gray-400">-</span>
+                        </div>
+                    @endfor
                 </div>
             @endif
         </div>
     </div>
 
     <!-- Logout Button -->
-    <div class="px-4 py-3 pb-6">
+    <div class="px-4 py-3 pb-8">
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="w-full bg-[#fb0302] text-white py-3 rounded-xl font-semibold hover:bg-[#ff040c] transition-colors">
@@ -209,36 +218,6 @@
         </form>
     </div>
 
-    <!-- Debug Button (Development Only) -->
-    @if(app()->environment('local'))
-    <div class="px-4 py-3 pb-6">
-        <div class="grid grid-cols-2 gap-3 mb-3">
-            <button type="button" id="debugBtn" class="bg-yellow-500 text-white py-3 rounded-xl font-semibold hover:bg-yellow-600 transition-colors">
-                Debug Data
-            </button>
-            <button type="button" id="refreshBtn" class="bg-blue-500 text-white py-3 rounded-xl font-semibold hover:bg-blue-600 transition-colors">
-                Refresh Now
-            </button>
-        </div>
-        <div class="grid grid-cols-2 gap-3 mb-3">
-            <button type="button" id="testUserBtn" class="bg-green-500 text-white py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors">
-                Test User
-            </button>
-            <button type="button" id="testDistanceBtn" class="bg-purple-500 text-white py-3 rounded-xl font-semibold hover:bg-purple-600 transition-colors">
-                Test Distance
-            </button>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-            <button type="button" id="testDistanceRequestBtn" class="bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600 transition-colors">
-                Test Request
-            </button>
-            <button type="button" id="testDistanceActualBtn" class="bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-colors">
-                Test GPS Real
-            </button>
-        </div>
-        <div id="debugResult" class="mt-3 p-3 bg-gray-100 rounded-lg text-xs hidden"></div>
-    </div>
-    @endif
 
     <script>
         // Auto-refresh attendance data every 5 seconds
@@ -260,11 +239,26 @@
                         }
                         
                         // Update status colors if needed
-                        if (data.data.has_attendance) {
-                            const masukCard = document.querySelector('[data-attendance="masuk"]');
-                            if (masukCard && data.data.jam_masuk) {
+                        const masukCard = document.querySelector('[data-attendance="masuk"]');
+                        const pulangCard = document.querySelector('[data-attendance="pulang"]');
+                        
+                        if (masukCard) {
+                            if (data.data.jam_masuk) {
                                 masukCard.classList.add('bg-green-600');
                                 masukCard.classList.remove('bg-[#ff040c]');
+                            } else {
+                                masukCard.classList.add('bg-[#ff040c]');
+                                masukCard.classList.remove('bg-green-600');
+                            }
+                        }
+                        
+                        if (pulangCard) {
+                            if (data.data.jam_pulang) {
+                                pulangCard.classList.add('bg-green-600');
+                                pulangCard.classList.remove('bg-[#ff040c]');
+                            } else {
+                                pulangCard.classList.add('bg-[#ff040c]');
+                                pulangCard.classList.remove('bg-green-600');
                             }
                         }
                     }
@@ -272,253 +266,8 @@
                 .catch(error => console.error('Error refreshing data:', error));
         }
 
-        // Debug button functionality
+        // Start auto-refresh
         document.addEventListener('DOMContentLoaded', function() {
-            const debugBtn = document.getElementById('debugBtn');
-            const refreshBtn = document.getElementById('refreshBtn');
-            const testUserBtn = document.getElementById('testUserBtn');
-            const testDistanceBtn = document.getElementById('testDistanceBtn');
-            const testDistanceRequestBtn = document.getElementById('testDistanceRequestBtn');
-            const testDistanceActualBtn = document.getElementById('testDistanceActualBtn');
-            
-            if (debugBtn) {
-                debugBtn.addEventListener('click', function() {
-                    const debugResult = document.getElementById('debugResult');
-                    debugResult.classList.remove('hidden');
-                    
-                                    // Get current attendance data
-                fetch('{{ route("karyawan.attendance.current") }}')
-                    .then(response => response.json())
-                    .then(data => {
-                        let debugInfo = '<strong>Debug Info:</strong><br>';
-                        debugInfo += 'API Response: ' + JSON.stringify(data, null, 2) + '<br><br>';
-                        debugInfo += 'Absen Masuk: ' + (data.data.jam_masuk || 'Belum absen') + '<br>';
-                        debugInfo += 'Absen Pulang: ' + (data.data.jam_pulang || 'Belum Absen') + '<br>';
-                        debugInfo += 'Status: ' + (data.data.status || 'N/A') + '<br>';
-                        debugInfo += 'Has Attendance: ' + (data.data.has_attendance ? 'Yes' : 'No') + '<br>';
-                        debugInfo += 'Current Time: ' + new Date().toLocaleString('id-ID') + '<br>';
-                        debugInfo += 'Page URL: ' + window.location.href;
-                        
-                        debugResult.innerHTML = debugInfo;
-                    })
-                        .catch(error => {
-                            document.getElementById('debugResult').innerHTML = 'Error: ' + error.message;
-                        });
-                });
-            }
-            
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', function() {
-                    refreshAttendanceData();
-                    this.textContent = 'Refreshing...';
-                    this.disabled = true;
-                    setTimeout(() => {
-                        this.textContent = 'Refresh Now';
-                        this.disabled = false;
-                    }, 2000);
-                });
-            }
-            
-            if (testUserBtn) {
-                testUserBtn.addEventListener('click', function() {
-                    const debugResult = document.getElementById('debugResult');
-                    debugResult.classList.remove('hidden');
-                    debugResult.innerHTML = 'Loading user data...';
-                    
-                    fetch('/test-user')
-                        .then(response => response.json())
-                        .then(data => {
-                            let debugInfo = '<strong>User Test Info:</strong><br>';
-                            debugInfo += 'User ID: ' + (data.user?.id || 'N/A') + '<br>';
-                            debugInfo += 'User Name: ' + (data.user?.name || 'N/A') + '<br>';
-                            debugInfo += 'User Email: ' + (data.user?.email || 'N/A') + '<br>';
-                            debugInfo += 'Lokasi Kantor ID: ' + (data.user?.lokasi_kantor_id || 'N/A') + '<br>';
-                            debugInfo += 'User Role: ' + (data.user?.role || 'N/A') + '<br><br>';
-                            
-                            if (data.lokasi_kantor) {
-                                debugInfo += '<strong>Office Location:</strong><br>';
-                                debugInfo += 'Office ID: ' + data.lokasi_kantor.id + '<br>';
-                                debugInfo += 'Office Name: ' + data.lokasi_kantor.nama_lokasi + '<br>';
-                                debugInfo += 'Latitude: ' + data.lokasi_kantor.latitude + '<br>';
-                                debugInfo += 'Longitude: ' + data.lokasi_kantor.longitude + '<br>';
-                                debugInfo += 'Radius: ' + data.lokasi_kantor.radius + 'm<br><br>';
-                            } else {
-                                debugInfo += '<strong>Office Location: NOT FOUND!</strong><br><br>';
-                            }
-                            
-                            if (data.today_absensi) {
-                                debugInfo += '<strong>Today\'s Attendance:</strong><br>';
-                                debugInfo += 'Attendance ID: ' + data.today_absensi.id + '<br>';
-                                debugInfo += 'Jam Masuk: ' + (data.today_absensi.jam_masuk || 'N/A') + '<br>';
-                                debugInfo += 'Jam Pulang: ' + (data.today_absensi.jam_pulang || 'N/A') + '<br>';
-                                debugInfo += 'Status: ' + (data.today_absensi.status || 'N/A') + '<br>';
-                            } else {
-                                debugInfo += '<strong>Today\'s Attendance: NOT FOUND!</strong><br>';
-                            }
-                            
-                            debugResult.innerHTML = debugInfo;
-                        })
-                        .catch(error => {
-                            document.getElementById('debugResult').innerHTML = 'Error: ' + error.message;
-                        });
-                });
-            }
-            
-            if (testDistanceBtn) {
-                testDistanceBtn.addEventListener('click', function() {
-                    const debugResult = document.getElementById('debugResult');
-                    debugResult.classList.remove('hidden');
-                    debugResult.innerHTML = 'Loading distance data...';
-                    
-                    fetch('/test-distance')
-                        .then(response => response.json())
-                        .then(data => {
-                            let debugInfo = '<strong>Distance Test Info:</strong><br>';
-                            debugInfo += '<strong>Test Coordinates:</strong><br>';
-                            debugInfo += 'Latitude: ' + data.test_coordinates.latitude + '<br>';
-                            debugInfo += 'Longitude: ' + data.test_coordinates.longitude + '<br><br>';
-                            
-                            debugInfo += '<strong>Office Coordinates:</strong><br>';
-                            debugInfo += 'Latitude: ' + data.office_coordinates.latitude + '<br>';
-                            debugInfo += 'Longitude: ' + data.office_coordinates.longitude + '<br><br>';
-                            
-                            debugInfo += '<strong>Distance Calculation:</strong><br>';
-                            debugInfo += 'Office Radius: ' + data.office_radius + 'm<br>';
-                            debugInfo += 'Calculated Distance: ' + data.calculated_distance + 'm<br>';
-                            debugInfo += 'Distance (km): ' + data.distance_km + 'km<br>';
-                            debugInfo += 'Within Radius: ' + (data.within_radius ? 'YES' : 'NO') + '<br>';
-                            debugInfo += 'Status: ' + data.status + '<br><br>';
-                            
-                            debugInfo += '<strong>Analysis:</strong><br>';
-                            if (data.within_radius) {
-                                debugInfo += '✅ User berada dalam radius kantor<br>';
-                                debugInfo += '✅ Bisa melakukan absensi<br>';
-                            } else {
-                                debugInfo += '❌ User berada di luar radius kantor<br>';
-                                debugInfo += '❌ TIDAK BISA melakukan absensi<br>';
-                                debugInfo += '⚠️ Radius kantor: ' + data.office_radius + 'm<br>';
-                                debugInfo += '⚠️ Jarak user: ' + data.calculated_distance + 'm<br>';
-                            }
-                            
-                            debugResult.innerHTML = debugInfo;
-                        })
-                        .catch(error => {
-                            document.getElementById('debugResult').innerHTML = 'Error: ' + error.message;
-                        });
-                });
-            }
-            
-            if (testDistanceRequestBtn) {
-                testDistanceRequestBtn.addEventListener('click', function() {
-                    const debugResult = document.getElementById('debugResult');
-                    debugResult.classList.remove('hidden');
-                    debugResult.innerHTML = 'Loading request distance data...';
-                    
-                    // Get coordinates from the last absen attempt or use test coordinates
-                    const testLat = -7.6528390;
-                    const testLon = 111.5339200;
-                    
-                    const formData = new FormData();
-                    formData.append('latitude', testLat);
-                    formData.append('longitude', testLon);
-                    
-                    fetch('/test-distance-request', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        let debugInfo = '<strong>Distance Request Test Info:</strong><br>';
-                        debugInfo += '<strong>Request Coordinates:</strong><br>';
-                        debugInfo += 'Latitude: ' + data.request_coordinates.latitude + '<br>';
-                        debugInfo += 'Longitude: ' + data.request_coordinates.longitude + '<br><br>';
-                        
-                        debugInfo += '<strong>Office Coordinates:</strong><br>';
-                        debugInfo += 'Latitude: ' + data.office_coordinates.latitude + '<br>';
-                        debugInfo += 'Longitude: ' + data.office_coordinates.longitude + '<br><br>';
-                        
-                        debugInfo += '<strong>Distance Calculation:</strong><br>';
-                        debugInfo += 'Office Radius: ' + data.office_radius + 'm<br>';
-                        debugInfo += 'Calculated Distance: ' + data.calculated_distance + 'm<br>';
-                        debugInfo += 'Distance (km): ' + data.distance_km + 'km<br>';
-                        debugInfo += 'Within Radius: ' + (data.within_radius ? 'YES' : 'NO') + '<br>';
-                        debugInfo += 'Status: ' + data.status + '<br><br>';
-                        
-                        debugInfo += '<strong>Coordinate Analysis:</strong><br>';
-                        debugInfo += 'Coordinates Match: ' + (data.analysis.coordinates_match ? 'YES' : 'NO') + '<br>';
-                        debugInfo += 'Test Coordinates: ' + data.analysis.test_coordinates.join(', ') + '<br>';
-                        debugInfo += 'Request Coordinates: ' + data.analysis.request_coordinates.join(', ') + '<br><br>';
-                        
-                        debugInfo += '<strong>Analysis:</strong><br>';
-                        if (data.within_radius) {
-                            debugInfo += '✅ User berada dalam radius kantor<br>';
-                            debugInfo += '✅ Bisa melakukan absensi<br>';
-                        } else {
-                            debugInfo += '❌ User berada di luar radius kantor<br>';
-                            debugInfo += '❌ TIDAK BISA melakukan absensi<br>';
-                            debugInfo += '⚠️ Radius kantor: ' + data.office_radius + 'm<br>';
-                            debugInfo += '⚠️ Jarak user: ' + data.calculated_distance + 'm<br>';
-                        }
-                        
-                        debugResult.innerHTML = debugInfo;
-                    })
-                    .catch(error => {
-                        document.getElementById('debugResult').innerHTML = 'Error: ' + error.message;
-                    });
-                });
-            }
-            
-            if (testDistanceActualBtn) {
-                testDistanceActualBtn.addEventListener('click', function() {
-                    const debugResult = document.getElementById('debugResult');
-                    debugResult.classList.remove('hidden');
-                    debugResult.innerHTML = 'Loading actual GPS distance data...';
-                    
-                    fetch('/test-distance-actual')
-                        .then(response => response.json())
-                        .then(data => {
-                            let debugInfo = '<strong>Actual GPS Distance Test Info:</strong><br>';
-                            debugInfo += '<strong>Actual GPS Coordinates:</strong><br>';
-                            debugInfo += 'Latitude: ' + data.actual_gps_coordinates.latitude + '<br>';
-                            debugInfo += 'Longitude: ' + data.actual_gps_coordinates.longitude + '<br><br>';
-                            
-                            debugInfo += '<strong>Office Coordinates:</strong><br>';
-                            debugInfo += 'Latitude: ' + data.office_coordinates.latitude + '<br>';
-                            debugInfo += 'Longitude: ' + data.office_coordinates.longitude + '<br><br>';
-                            
-                            debugInfo += '<strong>Distance Calculation:</strong><br>';
-                            debugInfo += 'Office Radius: ' + data.office_radius + 'm<br>';
-                            debugInfo += 'Calculated Distance: ' + data.calculated_distance + 'm<br>';
-                            debugInfo += 'Distance (km): ' + data.distance_km + 'km<br>';
-                            debugInfo += 'Within Radius: ' + (data.within_radius ? 'YES' : 'NO') + '<br>';
-                            debugInfo += 'Status: ' + data.status + '<br><br>';
-                            
-                            debugInfo += '<strong>Coordinate Analysis:</strong><br>';
-                            debugInfo += 'Coordinates Match: ' + (data.analysis.coordinates_match ? 'YES' : 'NO') + '<br>';
-                            debugInfo += 'Test Coordinates: ' + data.analysis.test_coordinates.join(', ') + '<br>';
-                            debugInfo += 'Actual GPS Coordinates: ' + data.analysis.actual_coordinates.join(', ') + '<br>';
-                            debugInfo += 'Distance Difference: ' + data.analysis.distance_difference + '<br><br>';
-                            
-                            debugInfo += '<strong>Analysis:</strong><br>';
-                            if (data.within_radius) {
-                                debugInfo += '✅ User berada dalam radius kantor<br>';
-                                debugInfo += '✅ Bisa melakukan absensi<br>';
-                            } else {
-                                debugInfo += '❌ User berada di luar radius kantor<br>';
-                                debugInfo += '❌ TIDAK BISA melakukan absensi<br>';
-                                debugInfo += '⚠️ Radius kantor: ' + data.office_radius + 'm<br>';
-                                debugInfo += '⚠️ Jarak user: ' + data.calculated_distance + 'm<br>';
-                            }
-                            
-                            debugResult.innerHTML = debugInfo;
-                        })
-                        .catch(error => {
-                            document.getElementById('debugResult').innerHTML = 'Error: ' + error.message;
-                        });
-                });
-            }
-            
-            // Start auto-refresh
             setInterval(refreshAttendanceData, 5000);
         });
     </script>
