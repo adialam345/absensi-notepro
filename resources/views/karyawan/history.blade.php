@@ -101,7 +101,7 @@
                                         {{ $a->status === 'hadir' ? 'bg-green-100 text-green-800' : 
                                            ($a->status === 'terlambat' ? 'bg-yellow-100 text-yellow-800' : 
                                            ($a->status === 'izin' ? 'bg-blue-100 text-blue-800' : 
-                                           ($a->status === 'sakit' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
+                                           ($a->status === 'sakit' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'))) }}">
                                         {{ ucfirst($a->status) }}
                                     </span>
                                 </td>

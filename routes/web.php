@@ -276,9 +276,7 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::get('/karyawan/izin-cuti/history', [App\Http\Controllers\KaryawanController::class, 'historyIzinCuti'])->name('karyawan.izin.cuti.history');
     
     // History
-    Route::get('/karyawan/history', function () {
-        return view('karyawan.history');
-    })->name('karyawan.history');
+    Route::get('/karyawan/history', [App\Http\Controllers\KaryawanController::class, 'historyAbsensi'])->name('karyawan.history');
     
     // Profile
     Route::get('/karyawan/profile', function () {
