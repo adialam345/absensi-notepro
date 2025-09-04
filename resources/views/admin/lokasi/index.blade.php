@@ -9,16 +9,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('admin.dashboard') }}" class="text-white">
-                    <i class="fas fa-arrow-left text-lg"></i>
-                </a>
-                <span class="font-semibold text-sm">Lokasi Kantor</span>
-            </div>
-        </div>
-    </div>
+    <x-admin-navbar title="Lokasi Kantor" />
 
     <!-- Content -->
     <div class="p-4">

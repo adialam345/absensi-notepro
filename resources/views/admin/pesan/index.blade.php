@@ -11,21 +11,12 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('admin.dashboard') }}" class="text-white">
-                    <i class="fas fa-arrow-left text-lg"></i>
-                </a>
-                <span class="font-semibold text-sm">Kirim Pesan</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('admin.pesan.history') }}" class="text-white text-sm">
-                    <i class="fas fa-history mr-1"></i>History
-                </a>
-            </div>
-        </div>
-    </div>
+    <x-admin-navbar 
+        title="Kirim Pesan" 
+        :actions="[
+            ['url' => route('admin.pesan.history'), 'icon' => 'fas fa-history', 'text' => 'History']
+        ]" 
+    />
 
     <!-- Content -->
     <div class="p-4">

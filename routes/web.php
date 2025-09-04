@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -296,8 +297,9 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::put('/karyawan/profile', [App\Http\Controllers\KaryawanController::class, 'updateProfile'])->name('karyawan.profile.update');
     
     // Pesan Routes
+    Route::get('/karyawan/pesan/unread-count', [KaryawanPesanController::class, 'getUnreadCount'])->name('karyawan.pesan.unread-count');
     Route::get('/karyawan/pesan', [KaryawanPesanController::class, 'index'])->name('karyawan.pesan.index');
     Route::get('/karyawan/pesan/{id}', [KaryawanPesanController::class, 'show'])->name('karyawan.pesan.show');
     Route::post('/karyawan/pesan/{id}/mark-read', [KaryawanPesanController::class, 'markAsRead'])->name('karyawan.pesan.mark-read');
-    Route::get('/karyawan/pesan/unread-count', [KaryawanPesanController::class, 'getUnreadCount'])->name('karyawan.pesan.unread-count');
 });
+

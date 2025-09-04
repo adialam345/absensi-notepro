@@ -9,21 +9,12 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('admin.dashboard') }}" class="text-white">
-                    <i class="fas fa-arrow-left text-lg"></i>
-                </a>
-                <span class="font-semibold text-sm">Kelola Karyawan</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('admin.export.karyawan') }}" class="bg-[#fb0302] px-3 py-1 rounded text-xs hover:bg-red-700">
-                    <i class="fas fa-download mr-1"></i>Export
-                </a>
-            </div>
-        </div>
-    </div>
+    <x-admin-navbar 
+        title="Kelola Karyawan" 
+        :actions="[
+            ['url' => route('admin.export.karyawan'), 'icon' => 'fas fa-download', 'text' => 'Export']
+        ]" 
+    />
 
     <!-- Content -->
     <div class="p-4">
