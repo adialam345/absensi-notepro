@@ -226,6 +226,36 @@ Route::get('/test-distance-actual', function() {
     ]);
 })->name('test.distance.actual');
 
+// Test unread count
+Route::get('/test-unread-count', function() {
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['error' => 'User not authenticated']);
+    }
+    
+    $totalPesan = App\Models\Pesan::count();
+    $unreadCount = App\Models\Pesan::where('penerima_id', $user->id)
+        ->where('dibaca', false)
+        ->count();
+    
+    $allPesan = App\Models\Pesan::where('penerima_id', $user->id)->get();
+    
+    return response()->json([
+        'user_id' => $user->id,
+        'user_name' => $user->name,
+        'total_pesan' => $totalPesan,
+        'unread_count' => $unreadCount,
+        'all_pesan' => $allPesan->map(function($p) {
+            return [
+                'id' => $p->id,
+                'judul' => $p->judul,
+                'dibaca' => $p->dibaca,
+                'created_at' => $p->created_at
+            ];
+        })
+    ]);
+})->name('test.unread.count');
+
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     
@@ -253,6 +283,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     
     // Export Data
     Route::get('/admin/export/karyawan', [AdminController::class, 'exportKaryawan'])->name('admin.export.karyawan');
+    Route::get('/admin/export/absensi', [AdminController::class, 'exportAbsensi'])->name('admin.export.absensi');
     
     // Pesan Routes
     Route::get('/admin/pesan', [App\Http\Controllers\AdminPesanController::class, 'index'])->name('admin.pesan.index');

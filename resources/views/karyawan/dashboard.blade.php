@@ -21,7 +21,10 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <i class="fas fa-bell text-lg"></i>
+                <div class="relative">
+                    <i id="bellIcon" class="fas fa-bell text-lg"></i>
+                    <span id="bellBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden font-bold">0</span>
+                </div>
             </div>
         </div>
     </div>
@@ -282,17 +285,54 @@
         // Load unread message count
         function loadUnreadCount() {
             fetch('{{ route("karyawan.pesan.unread-count") }}')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    console.log('Unread count data:', data); // Debug log
+                    
                     const pesanBadge = document.getElementById('pesanBadge');
+                    const bellBadge = document.getElementById('bellBadge');
+                    
                     if (data.unread_count > 0) {
-                        pesanBadge.textContent = data.unread_count;
-                        pesanBadge.classList.remove('hidden');
+                        // Update pesan badge
+                        if (pesanBadge) {
+                            pesanBadge.textContent = data.unread_count;
+                            pesanBadge.classList.remove('hidden');
+                        }
+                        
+                        // Update bell badge with animation
+                        if (bellBadge) {
+                            bellBadge.textContent = data.unread_count;
+                            bellBadge.classList.remove('hidden');
+                        }
+                        
+                        // Add shake animation to bell icon
+                        const bellIcon = document.getElementById('bellIcon');
+                        if (bellIcon) {
+                            bellIcon.classList.add('animate-bounce');
+                            setTimeout(() => {
+                                bellIcon.classList.remove('animate-bounce');
+                            }, 1000);
+                        }
                     } else {
-                        pesanBadge.classList.add('hidden');
+                        // Hide both badges
+                        if (pesanBadge) pesanBadge.classList.add('hidden');
+                        if (bellBadge) bellBadge.classList.add('hidden');
                     }
                 })
-                .catch(error => console.error('Error loading unread count:', error));
+                .catch(error => {
+                    console.error('Error loading unread count:', error);
+                    // Show error in console for debugging
+                    console.log('Trying test endpoint...');
+                    fetch('/test-unread-count')
+                        .then(response => response.json())
+                        .then(data => console.log('Test endpoint data:', data))
+                        .catch(err => console.error('Test endpoint error:', err));
+                });
         }
 
         // Start auto-refresh

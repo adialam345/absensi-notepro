@@ -70,8 +70,12 @@
 
         <!-- Export Buttons -->
         <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-semibold mb-4" style="color: #ff040c;">Export Data</h3>
             <div class="flex flex-wrap gap-4">
-                <button onclick="exportToExcel()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                <a href="{{ route('admin.export.absensi', request()->query()) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    <i class="fas fa-file-csv mr-2"></i>Export CSV
+                </a>
+                <button onclick="exportToExcel()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
                     <i class="fas fa-file-excel mr-2"></i>Export Excel
                 </button>
                 <button onclick="exportToPDF()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">

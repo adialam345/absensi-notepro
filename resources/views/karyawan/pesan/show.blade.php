@@ -17,6 +17,12 @@
                 </a>
                 <span class="font-semibold text-sm">Detail Pesan</span>
             </div>
+            <div class="flex items-center space-x-2">
+                <div class="relative">
+                    <i id="bellIcon" class="fas fa-bell text-lg"></i>
+                    <span id="bellBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden font-bold">0</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -95,5 +101,51 @@
             </a>
         </div>
     </div>
+
+    <script>
+        // Load unread count for bell notification
+        function loadUnreadCount() {
+            fetch('{{ route("karyawan.pesan.unread-count") }}')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Unread count data:', data); // Debug log
+                    
+                    const bellBadge = document.getElementById('bellBadge');
+                    
+                    if (data.unread_count > 0) {
+                        // Update bell badge
+                        if (bellBadge) {
+                            bellBadge.textContent = data.unread_count;
+                            bellBadge.classList.remove('hidden');
+                        }
+                        
+                        // Add bounce animation to bell icon
+                        const bellIcon = document.getElementById('bellIcon');
+                        if (bellIcon) {
+                            bellIcon.classList.add('animate-bounce');
+                            setTimeout(() => {
+                                bellIcon.classList.remove('animate-bounce');
+                            }, 1000);
+                        }
+                    } else {
+                        // Hide badge
+                        if (bellBadge) bellBadge.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading unread count:', error);
+                });
+        }
+
+        // Load unread count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUnreadCount();
+        });
+    </script>
 </body>
 </html>

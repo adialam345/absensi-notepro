@@ -123,7 +123,7 @@
     <!-- Quick Actions -->
     <div class="px-4 py-3">
         <h2 class="text-sm font-semibold text-gray-700 mb-3">Aksi Cepat</h2>
-        <div class="grid grid-cols-4 gap-2">
+        <div class="grid grid-cols-5 gap-2">
             <a href="{{ route('admin.karyawan.create') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
                 <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
                     <i class="fas fa-user-plus text-white text-xs"></i>
@@ -135,7 +135,14 @@
                 <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
                     <i class="fas fa-download text-white text-xs"></i>
                 </div>
-                <span class="text-xs font-medium text-gray-700">Export</span>
+                <span class="text-xs font-medium text-gray-700">Export Karyawan</span>
+            </a>
+            
+            <a href="{{ route('admin.export.absensi') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
+                <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
+                    <i class="fas fa-file-csv text-white text-xs"></i>
+                </div>
+                <span class="text-xs font-medium text-gray-700">Export Absensi</span>
             </a>
             
             <a href="{{ route('admin.cuti.index') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">

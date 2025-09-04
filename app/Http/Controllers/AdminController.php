@@ -326,4 +326,66 @@ class AdminController extends Controller
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
+
+    public function exportAbsensi(Request $request)
+    {
+        $query = Absensi::with('user');
+        
+        // Filter berdasarkan tanggal
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_mulai);
+        }
+        
+        if ($request->filled('tanggal_selesai')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_selesai);
+        }
+        
+        // Filter berdasarkan karyawan
+        if ($request->filled('karyawan_id')) {
+            $query->where('user_id', $request->karyawan_id);
+        }
+        
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        $absensi = $query->orderBy('tanggal', 'desc')->get();
+        
+        $filename = 'absensi_' . date('Y-m-d') . '.csv';
+        $handle = fopen('php://temp', 'r+');
+        
+        // Header CSV
+        fputcsv($handle, [
+            'Tanggal', 
+            'Nama Karyawan', 
+            'Jam Masuk', 
+            'Jam Pulang', 
+            'Status', 
+            'Keterangan',
+            'Lokasi Masuk',
+            'Lokasi Pulang'
+        ]);
+        
+        foreach ($absensi as $a) {
+            fputcsv($handle, [
+                $a->tanggal,
+                $a->user->name ?? 'N/A',
+                $a->jam_masuk ?? '-',
+                $a->jam_pulang ?? '-',
+                ucfirst($a->status),
+                $a->keterangan ?? '-',
+                $a->lokasi_masuk ?? '-',
+                $a->lokasi_pulang ?? '-'
+            ]);
+        }
+        
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+        
+        return response($csv)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
 }
