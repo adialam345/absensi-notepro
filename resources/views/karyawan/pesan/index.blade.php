@@ -102,8 +102,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Unread count data:', data); // Debug log
-                    
                     const unreadCount = document.getElementById('unreadCount');
                     const bellBadge = document.getElementById('bellBadge');
                     
@@ -111,13 +109,13 @@
                         // Update unread count badge
                         if (unreadCount) {
                             unreadCount.textContent = data.unread_count;
-                            unreadCount.classList.remove('hidden');
+                            unreadCount.style.display = 'flex';
                         }
                         
                         // Update bell badge
                         if (bellBadge) {
                             bellBadge.textContent = data.unread_count;
-                            bellBadge.classList.remove('hidden');
+                            bellBadge.style.display = 'flex';
                         }
                         
                         // Add bounce animation to bell icon
@@ -130,8 +128,8 @@
                         }
                     } else {
                         // Hide both badges
-                        if (unreadCount) unreadCount.classList.add('hidden');
-                        if (bellBadge) bellBadge.classList.add('hidden');
+                        if (unreadCount) unreadCount.style.display = 'none';
+                        if (bellBadge) bellBadge.style.display = 'none';
                     }
                 })
                 .catch(error => {

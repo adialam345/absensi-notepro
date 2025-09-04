@@ -153,15 +153,13 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Unread count data:', data); // Debug log
-                    
                     const bellBadge = document.getElementById('bellBadge');
                     
                     if (data.unread_count > 0) {
                         // Update bell badge
                         if (bellBadge) {
                             bellBadge.textContent = data.unread_count;
-                            bellBadge.classList.remove('hidden');
+                            bellBadge.style.display = 'flex';
                         }
                         
                         // Add bounce animation to bell icon
@@ -174,7 +172,7 @@
                         }
                     } else {
                         // Hide badge
-                        if (bellBadge) bellBadge.classList.add('hidden');
+                        if (bellBadge) bellBadge.style.display = 'none';
                     }
                 })
                 .catch(error => {

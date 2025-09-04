@@ -62,60 +62,45 @@
     <!-- Main Management -->
     <div class="px-4 py-3">
         <h2 class="text-sm font-semibold text-gray-700 mb-3">Manajemen Utama</h2>
-        <div class="space-y-3">
-            <a href="{{ route('admin.karyawan.index') }}" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center space-x-3">
-                <div class="w-8 h-8 bg-[#ff040c] rounded-lg flex items-center justify-center">
+        <div class="grid grid-cols-2 gap-3">
+            <a href="{{ route('admin.karyawan.index') }}" class="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow text-center">
+                <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-users text-white text-sm"></i>
                 </div>
-                <div class="flex-1">
-                    <h3 class="font-medium text-gray-800 text-sm">Kelola Karyawan</h3>
-                    <p class="text-xs text-gray-500">Tambah, edit, hapus data karyawan</p>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                <h3 class="font-medium text-gray-800 text-xs mb-1">Kelola Karyawan</h3>
+                <p class="text-xs text-gray-500">Tambah, edit, hapus data</p>
             </a>
             
-            <a href="{{ route('admin.lokasi.index') }}" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center space-x-3">
-                <div class="w-8 h-8 bg-[#ff040c] rounded-lg flex items-center justify-center">
+            <a href="{{ route('admin.lokasi.index') }}" class="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow text-center">
+                <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-map-marker-alt text-white text-sm"></i>
                 </div>
-                <div class="flex-1">
-                    <h3 class="font-medium text-gray-800 text-sm">Lokasi Kantor</h3>
-                    <p class="text-xs text-gray-500">Kelola lokasi dan area kerja</p>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                <h3 class="font-medium text-gray-800 text-xs mb-1">Lokasi Kantor</h3>
+                <p class="text-xs text-gray-500">Kelola lokasi dan area</p>
             </a>
             
-            <a href="{{ route('admin.laporan.absensi') }}" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center space-x-3">
-                <div class="w-8 h-8 bg-[#ff040c] rounded-lg flex items-center justify-center">
+            <a href="{{ route('admin.laporan.absensi') }}" class="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow text-center">
+                <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-chart-bar text-white text-sm"></i>
                 </div>
-                <div class="flex-1">
-                    <h3 class="font-medium text-gray-800 text-sm">Laporan Absensi</h3>
-                    <p class="text-xs text-gray-500">Lihat laporan kehadiran karyawan</p>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                <h3 class="font-medium text-gray-800 text-xs mb-1">Laporan Absensi</h3>
+                <p class="text-xs text-gray-500">Lihat laporan kehadiran</p>
             </a>
             
-            <a href="{{ route('admin.cuti.index') }}" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center space-x-3">
-                <div class="w-8 h-8 bg-[#ff040c] rounded-lg flex items-center justify-center">
+            <a href="{{ route('admin.cuti.index') }}" class="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow text-center">
+                <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-calendar-times text-white text-sm"></i>
                 </div>
-                <div class="flex-1">
-                    <h3 class="font-medium text-gray-800 text-sm">Kelola Cuti & Izin</h3>
-                    <p class="text-xs text-gray-500">Setujui/tolak pengajuan cuti karyawan</p>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                <h3 class="font-medium text-gray-800 text-xs mb-1">Kelola Cuti & Izin</h3>
+                <p class="text-xs text-gray-500">Setujui/tolak pengajuan</p>
             </a>
             
-            <a href="{{ route('admin.pesan.index') }}" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center space-x-3">
-                <div class="w-8 h-8 bg-[#ff040c] rounded-lg flex items-center justify-center">
+            <a href="{{ route('admin.pesan.index') }}" class="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow text-center">
+                <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-envelope text-white text-sm"></i>
                 </div>
-                <div class="flex-1">
-                    <h3 class="font-medium text-gray-800 text-sm">Kirim Pesan</h3>
-                    <p class="text-xs text-gray-500">Kirim pesan dan peringatan ke karyawan</p>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                <h3 class="font-medium text-gray-800 text-xs mb-1">Kirim Pesan</h3>
+                <p class="text-xs text-gray-500">Kirim pesan ke karyawan</p>
             </a>
         </div>
     </div>
@@ -123,47 +108,40 @@
     <!-- Quick Actions -->
     <div class="px-4 py-3">
         <h2 class="text-sm font-semibold text-gray-700 mb-3">Aksi Cepat</h2>
-        <div class="grid grid-cols-5 gap-2">
+        <div class="grid grid-cols-3 gap-3">
             <a href="{{ route('admin.karyawan.create') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
-                    <i class="fas fa-user-plus text-white text-xs"></i>
+                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-user-plus text-white text-sm"></i>
                 </div>
-                <span class="text-xs font-medium text-gray-700">Tambah</span>
+                <span class="text-xs font-medium text-gray-700">Tambah Karyawan</span>
             </a>
             
             <a href="{{ route('admin.export.karyawan') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
-                    <i class="fas fa-download text-white text-xs"></i>
+                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-download text-white text-sm"></i>
                 </div>
                 <span class="text-xs font-medium text-gray-700">Export Karyawan</span>
             </a>
             
             <a href="{{ route('admin.export.absensi') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
-                    <i class="fas fa-file-csv text-white text-xs"></i>
+                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-file-csv text-white text-sm"></i>
                 </div>
                 <span class="text-xs font-medium text-gray-700">Export Absensi</span>
             </a>
             
-            <a href="{{ route('admin.cuti.index') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
-                    <i class="fas fa-calendar-check text-white text-xs"></i>
-                </div>
-                <span class="text-xs font-medium text-gray-700">Cuti</span>
-            </a>
-            
             <a href="{{ route('admin.lokasi.create') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-6 h-6 bg-[#fb0302] rounded-full flex items-center justify-center mx-auto mb-1">
-                    <i class="fas fa-plus text-white text-xs"></i>
+                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-plus text-white text-sm"></i>
                 </div>
-                <span class="text-xs font-medium text-gray-700">Lokasi</span>
+                <span class="text-xs font-medium text-gray-700">Tambah Lokasi</span>
             </a>
         </div>
     </div>
 
     <!-- Recent Employee Activities -->
     <div class="px-4 py-3">
-        <h2 class="text-sm font-semibold text-gray-700 mb-3">Aktivitas Karyawan Terbaru</h2>
+        <h2 class="text-sm font-semibold text-gray-700 mb-3">Aktivitas Terbaru</h2>
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <div class="bg-[#ff040c] text-white px-3 py-2">
                 <div class="grid grid-cols-3 text-xs font-medium">
@@ -172,17 +150,17 @@
                     <span>Aktivitas</span>
                 </div>
             </div>
-            <div class="p-3">
+            <div class="p-3 max-h-32 overflow-y-auto">
                 @if(isset($recentActivities) && $recentActivities->count() > 0)
-                    @foreach($recentActivities as $activity)
-                        <div class="flex items-center justify-between py-2 {{ !$loop->last ? 'border-b border-gray-100' : '' }}">
+                    @foreach($recentActivities->take(5) as $activity)
+                        <div class="flex items-center justify-between py-1 {{ !$loop->last ? 'border-b border-gray-100' : '' }}">
                             <span class="text-xs text-gray-600">{{ $activity->jam_masuk ?? 'N/A' }}</span>
                             <span class="text-xs text-gray-800">{{ $activity->user->name ?? 'Unknown' }}</span>
                             <span class="text-xs text-gray-600">{{ $activity->status ?? 'Absen masuk' }}</span>
                         </div>
                     @endforeach
                 @else
-                    <div class="p-3 text-center text-gray-500">
+                    <div class="p-2 text-center text-gray-500">
                         <p class="text-xs">Belum ada aktivitas</p>
                     </div>
                 @endif

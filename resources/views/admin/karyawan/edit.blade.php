@@ -63,12 +63,10 @@
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select name="status" required 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c]">
-                                <option value="aktif" {{ $karyawan->status === 'aktif' ? 'selected' : '' }}>Aktif</option>
-                                <option value="nonaktif" {{ $karyawan->status === 'nonaktif' ? 'selected' : '' }}>Non Aktif</option>
-                            </select>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password Baru (Opsional)</label>
+                            <input type="password" name="password" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c]"
+                                placeholder="Kosongkan jika tidak ingin mengubah password">
                         </div>
                     </div>
 

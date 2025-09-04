@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Absen Masuk - Karyawan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -31,10 +32,10 @@
             
             <!-- Tabs -->
             <div class="flex border-b border-gray-200 mb-4">
-                <button class="flex-1 py-2 px-4 text-center border-b-2 border-[#ff040c] text-[#ff040c] font-medium text-sm">
+                <button id="tabKantor" class="flex-1 py-2 px-4 text-center border-b-2 border-[#ff040c] text-[#ff040c] font-medium text-sm">
                     Kantor
                 </button>
-                <button class="flex-1 py-2 px-4 text-center text-gray-500 font-medium text-sm">
+                <button id="tabDinasLuar" class="flex-1 py-2 px-4 text-center text-gray-500 font-medium text-sm">
                     Dinas Luar
                 </button>
             </div>
@@ -87,6 +88,21 @@
                 <i class="fas fa-camera mr-2"></i><span id="absenButtonText">Absen Masuk</span>
             </button>
             
+            <!-- Dinas Luar Form (Hidden by default) -->
+            <div id="dinasLuarForm" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Alasan Dinas Luar</label>
+                    <textarea id="alasanDinasLuar" rows="3" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm"
+                        placeholder="Jelaskan alasan dinas luar..."></textarea>
+                </div>
+                
+                <button id="absenDinasLuarBtn" disabled
+                    class="w-full bg-[#ff040c] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#fb0302] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-camera mr-2"></i><span id="absenDinasLuarButtonText">Absen Dinas Luar</span>
+                </button>
+            </div>
+            
             <!-- Status Absensi Hari Ini -->
             <div id="todayStatus" class="mt-4 p-3 bg-gray-50 rounded-lg text-center hidden">
                 <p class="text-sm text-gray-600 mb-1">Status Absensi Hari Ini:</p>
@@ -106,6 +122,7 @@
         let currentPhotoData = null;
         let todayAbsensi = null;
         let absenType = 'masuk'; // 'masuk' atau 'pulang'
+        let currentTab = 'kantor'; // 'kantor' atau 'dinas_luar'
 
         // Update greeting based on time
         function updateGreeting() {
@@ -132,6 +149,60 @@
                 year: 'numeric'
             });
             document.getElementById('currentTime').textContent = now.toLocaleTimeString('id-ID');
+        }
+
+        // Tab switching functionality
+        function switchTab(tab) {
+            const tabKantor = document.getElementById('tabKantor');
+            const tabDinasLuar = document.getElementById('tabDinasLuar');
+            const absenBtn = document.getElementById('absenBtn');
+            const dinasLuarForm = document.getElementById('dinasLuarForm');
+            const absenDinasLuarBtn = document.getElementById('absenDinasLuarBtn');
+            
+            if (tab === 'kantor') {
+                currentTab = 'kantor';
+                tabKantor.classList.add('border-b-2', 'border-[#ff040c]', 'text-[#ff040c]');
+                tabKantor.classList.remove('text-gray-500');
+                tabDinasLuar.classList.remove('border-b-2', 'border-[#ff040c]', 'text-[#ff040c]');
+                tabDinasLuar.classList.add('text-gray-500');
+                absenBtn.classList.remove('hidden');
+                dinasLuarForm.classList.add('hidden');
+            } else {
+                currentTab = 'dinas_luar';
+                tabDinasLuar.classList.add('border-b-2', 'border-[#ff040c]', 'text-[#ff040c]');
+                tabDinasLuar.classList.remove('text-gray-500');
+                tabKantor.classList.remove('border-b-2', 'border-[#ff040c]', 'text-[#ff040c]');
+                tabKantor.classList.add('text-gray-500');
+                absenBtn.classList.add('hidden');
+                dinasLuarForm.classList.remove('hidden');
+            }
+            
+            // Update button states
+            updateButtonStates();
+        }
+
+        // Update button states based on current tab and form readiness
+        function updateButtonStates() {
+            const isReady = photoTaken && locationObtained;
+            const absenBtn = document.getElementById('absenBtn');
+            const absenDinasLuarBtn = document.getElementById('absenDinasLuarBtn');
+            const alasanDinasLuar = document.getElementById('alasanDinasLuar');
+            
+            if (currentTab === 'kantor') {
+                if (isReady) {
+                    absenBtn.disabled = false;
+                } else {
+                    absenBtn.disabled = true;
+                }
+            } else {
+                // For dinas luar, need photo, location, and reason
+                const dinasLuarReady = isReady && alasanDinasLuar.value.trim() !== '';
+                if (dinasLuarReady) {
+                    absenDinasLuarBtn.disabled = false;
+                } else {
+                    absenDinasLuarBtn.disabled = true;
+                }
+            }
         }
 
         // Initialize camera
@@ -528,6 +599,137 @@
             statusInfo.textContent = statusText;
             statusDiv.classList.remove('hidden');
         }
+
+        // Handle dinas luar absen
+        async function handleDinasLuarAbsen() {
+            if (!photoTaken || !locationObtained || !currentPhotoData) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Data Belum Lengkap!',
+                    text: 'Pastikan foto sudah diambil dan lokasi sudah didapatkan.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ff040c'
+                });
+                return;
+            }
+
+            const alasanDinasLuar = document.getElementById('alasanDinasLuar').value.trim();
+            if (!alasanDinasLuar) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Alasan Diperlukan!',
+                    text: 'Silakan isi alasan dinas luar.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ff040c'
+                });
+                return;
+            }
+
+            console.log('Submitting dinas luar absen...');
+            
+            const absenDinasLuarBtn = document.getElementById('absenDinasLuarBtn');
+            absenDinasLuarBtn.disabled = true;
+            absenDinasLuarBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+            
+            // Show loading state
+            Swal.fire({
+                title: 'Memproses Absensi Dinas Luar...',
+                text: 'Mohon tunggu...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                // Validate location
+                if (!window.currentLocation || !window.currentLocation.lat || !window.currentLocation.lng) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lokasi Tidak Valid!',
+                        text: 'Koordinat lokasi tidak dapat dibaca. Pastikan GPS aktif dan coba lagi.',
+                        confirmButtonText: 'Coba Lagi',
+                        confirmButtonColor: '#ff040c'
+                    });
+                    absenDinasLuarBtn.disabled = false;
+                    absenDinasLuarBtn.innerHTML = '<i class="fas fa-camera mr-2"></i>Absen Dinas Luar';
+                    return;
+                }
+                
+                const latitude = window.currentLocation.lat;
+                const longitude = window.currentLocation.lng;
+                
+                console.log('Submitting with data:', {
+                    latitude,
+                    longitude,
+                    foto: currentPhotoData.substring(0, 50) + '...',
+                    alasan_dinas_luar: alasanDinasLuar,
+                    dinas_luar: true
+                });
+
+                const response = await fetch('{{ route("karyawan.absen.masuk.post") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        latitude: latitude,
+                        longitude: longitude,
+                        foto: currentPhotoData,
+                        alasan_dinas_luar: alasanDinasLuar,
+                        dinas_luar: true
+                    })
+                });
+
+                const result = await response.json();
+                console.log('Dinas luar absen result:', result);
+
+                Swal.close();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Absensi Dinas Luar Berhasil!',
+                        text: result.message,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#ff040c'
+                    }).then(() => {
+                        // Refresh attendance data
+                        checkTodayAttendance();
+                        // Reset form
+                        document.getElementById('alasanDinasLuar').value = '';
+                        photoTaken = false;
+                        locationObtained = false;
+                        currentPhotoData = null;
+                        updateButtonStates();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Absensi Dinas Luar Gagal!',
+                        text: result.message,
+                        confirmButtonText: 'Coba Lagi',
+                        confirmButtonColor: '#ff040c'
+                    });
+                    absenDinasLuarBtn.disabled = false;
+                    absenDinasLuarBtn.innerHTML = '<i class="fas fa-camera mr-2"></i>Absen Dinas Luar';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan!',
+                    text: 'Silakan coba lagi atau hubungi administrator.',
+                    confirmButtonText: 'Coba Lagi',
+                    confirmButtonColor: '#ff040c'
+                });
+                absenDinasLuarBtn.disabled = false;
+                absenDinasLuarBtn.innerHTML = '<i class="fas fa-camera mr-2"></i>Absen Dinas Luar';
+            }
+        }
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -546,6 +748,25 @@
             // Initialize camera and location
             initCamera();
             getLocation();
+            
+            // Tab switching event listeners
+            document.getElementById('tabKantor').addEventListener('click', function() {
+                switchTab('kantor');
+            });
+            
+            document.getElementById('tabDinasLuar').addEventListener('click', function() {
+                switchTab('dinas_luar');
+            });
+            
+            // Dinas luar form event listeners
+            document.getElementById('alasanDinasLuar').addEventListener('input', function() {
+                updateButtonStates();
+            });
+            
+            // Dinas luar button event listener
+            document.getElementById('absenDinasLuarBtn').addEventListener('click', async function() {
+                await handleDinasLuarAbsen();
+            });
             
         });
     </script>

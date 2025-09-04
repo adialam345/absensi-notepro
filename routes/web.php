@@ -3,11 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\KaryawanController;
+use App\Http\Controllers\KaryawanPesanController;
+use App\Http\Controllers\AdminPesanController;
 use Illuminate\Http\Request;
 
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+
 
 // Test radius checking
 Route::get('/test-radius', function() {
@@ -226,35 +232,6 @@ Route::get('/test-distance-actual', function() {
     ]);
 })->name('test.distance.actual');
 
-// Test unread count
-Route::get('/test-unread-count', function() {
-    $user = Auth::user();
-    if (!$user) {
-        return response()->json(['error' => 'User not authenticated']);
-    }
-    
-    $totalPesan = App\Models\Pesan::count();
-    $unreadCount = App\Models\Pesan::where('penerima_id', $user->id)
-        ->where('dibaca', false)
-        ->count();
-    
-    $allPesan = App\Models\Pesan::where('penerima_id', $user->id)->get();
-    
-    return response()->json([
-        'user_id' => $user->id,
-        'user_name' => $user->name,
-        'total_pesan' => $totalPesan,
-        'unread_count' => $unreadCount,
-        'all_pesan' => $allPesan->map(function($p) {
-            return [
-                'id' => $p->id,
-                'judul' => $p->judul,
-                'dibaca' => $p->dibaca,
-                'created_at' => $p->created_at
-            ];
-        })
-    ]);
-})->name('test.unread.count');
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
@@ -319,8 +296,8 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
     Route::put('/karyawan/profile', [App\Http\Controllers\KaryawanController::class, 'updateProfile'])->name('karyawan.profile.update');
     
     // Pesan Routes
-    Route::get('/karyawan/pesan', [App\Http\Controllers\KaryawanPesanController::class, 'index'])->name('karyawan.pesan.index');
-    Route::get('/karyawan/pesan/{id}', [App\Http\Controllers\KaryawanPesanController::class, 'show'])->name('karyawan.pesan.show');
-    Route::post('/karyawan/pesan/{id}/mark-read', [App\Http\Controllers\KaryawanPesanController::class, 'markAsRead'])->name('karyawan.pesan.mark-read');
-    Route::get('/karyawan/pesan/unread-count', [App\Http\Controllers\KaryawanPesanController::class, 'getUnreadCount'])->name('karyawan.pesan.unread-count');
+    Route::get('/karyawan/pesan', [KaryawanPesanController::class, 'index'])->name('karyawan.pesan.index');
+    Route::get('/karyawan/pesan/{id}', [KaryawanPesanController::class, 'show'])->name('karyawan.pesan.show');
+    Route::post('/karyawan/pesan/{id}/mark-read', [KaryawanPesanController::class, 'markAsRead'])->name('karyawan.pesan.mark-read');
+    Route::get('/karyawan/pesan/unread-count', [KaryawanPesanController::class, 'getUnreadCount'])->name('karyawan.pesan.unread-count');
 });

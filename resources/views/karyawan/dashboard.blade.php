@@ -23,7 +23,7 @@
             <div class="flex items-center space-x-2">
                 <div class="relative">
                     <i id="bellIcon" class="fas fa-bell text-lg"></i>
-                    <span id="bellBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden font-bold">0</span>
+                    <span id="bellBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold z-10" style="display: none;">0</span>
                 </div>
             </div>
         </div>
@@ -75,7 +75,7 @@
             <a href="{{ route('karyawan.pesan.index') }}" class="text-center">
                 <div class="w-10 h-10 bg-[#ff040c] rounded-xl flex items-center justify-center mx-auto mb-2 relative">
                     <i class="fas fa-envelope text-white text-sm"></i>
-                    <span id="pesanBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                    <span id="pesanBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold z-10" style="display: none;">0</span>
                 </div>
                 <span class="text-xs text-gray-700">Pesan</span>
             </a>
@@ -292,8 +292,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Unread count data:', data); // Debug log
-                    
                     const pesanBadge = document.getElementById('pesanBadge');
                     const bellBadge = document.getElementById('bellBadge');
                     
@@ -301,16 +299,16 @@
                         // Update pesan badge
                         if (pesanBadge) {
                             pesanBadge.textContent = data.unread_count;
-                            pesanBadge.classList.remove('hidden');
+                            pesanBadge.style.display = 'flex';
                         }
                         
                         // Update bell badge with animation
                         if (bellBadge) {
                             bellBadge.textContent = data.unread_count;
-                            bellBadge.classList.remove('hidden');
+                            bellBadge.style.display = 'flex';
                         }
                         
-                        // Add shake animation to bell icon
+                        // Add bounce animation to bell icon
                         const bellIcon = document.getElementById('bellIcon');
                         if (bellIcon) {
                             bellIcon.classList.add('animate-bounce');
@@ -320,25 +318,26 @@
                         }
                     } else {
                         // Hide both badges
-                        if (pesanBadge) pesanBadge.classList.add('hidden');
-                        if (bellBadge) bellBadge.classList.add('hidden');
+                        if (pesanBadge) {
+                            pesanBadge.style.display = 'none';
+                        }
+                        if (bellBadge) {
+                            bellBadge.style.display = 'none';
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error loading unread count:', error);
-                    // Show error in console for debugging
-                    console.log('Trying test endpoint...');
-                    fetch('/test-unread-count')
-                        .then(response => response.json())
-                        .then(data => console.log('Test endpoint data:', data))
-                        .catch(err => console.error('Test endpoint error:', err));
                 });
         }
 
         // Start auto-refresh
         document.addEventListener('DOMContentLoaded', function() {
+            // Load unread count immediately
+            loadUnreadCount();
+            
+            // Set up intervals
             setInterval(refreshAttendanceData, 5000);
-            loadUnreadCount(); // Load unread count on page load
             setInterval(loadUnreadCount, 10000); // Refresh unread count every 10 seconds
         });
     </script>

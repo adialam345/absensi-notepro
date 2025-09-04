@@ -95,7 +95,9 @@ class KaryawanController extends Controller
         $validator = Validator::make($request->all(), [
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'foto' => 'required|string|starts_with:data:image/'
+            'foto' => 'required|string|starts_with:data:image/',
+            'dinas_luar' => 'nullable|boolean',
+            'alasan_dinas_luar' => 'nullable|string|max:500'
         ]);
         
         if ($validator->fails()) {
@@ -105,6 +107,9 @@ class KaryawanController extends Controller
                 'errors' => $validator->errors()
             ]);
         }
+        
+        // Check if this is dinas luar
+        $isDinasLuar = $request->boolean('dinas_luar', false);
         
         // Check location
         $lokasiKantor = LokasiKantor::find($user->lokasi_kantor_id);
@@ -139,30 +144,24 @@ class KaryawanController extends Controller
             'within_radius' => $distance <= $lokasiKantor->radius
         ]);
         
-        if ($distance > $lokasiKantor->radius) {
-                    return response()->json([
-            'success' => false,
-            'message' => 'Anda berada di luar area kantor. Jarak: ' . round($distance, 2) . 'm, Radius: ' . $lokasiKantor->radius . 'm',
-            'data' => [
-                'calculated_distance' => round($distance, 2),
-                'office_radius' => $lokasiKantor->radius,
-                'within_radius' => false,
-                'user_coords' => [$request->latitude, $request->longitude],
-                'office_coords' => [$lokasiKantor->latitude, $lokasiKantor->longitude],
-                'status' => 'Luar radius'
-            ]
-        ]);
+        // Only check radius if not dinas luar
+        if (!$isDinasLuar && $distance > $lokasiKantor->radius) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda berada di luar area kantor. Jarak: ' . round($distance, 2) . 'm, Radius: ' . $lokasiKantor->radius . 'm',
+                'data' => [
+                    'calculated_distance' => round($distance, 2),
+                    'office_radius' => $lokasiKantor->radius,
+                    'within_radius' => false,
+                    'user_coords' => [$request->latitude, $request->longitude],
+                    'office_coords' => [$lokasiKantor->latitude, $lokasiKantor->longitude],
+                    'status' => 'Luar radius'
+                ]
+            ]);
         }
         
-        // Check if late
-        $jamSekarang = Carbon::now();
-        $jamKerja = explode(' - ', $user->jam_kerja ?? '08:00 - 17:00');
-        $jamMasuk = Carbon::createFromFormat('H:i', $jamKerja[0]);
-        
+        // Set status - terlambat tetap dihitung hadir
         $status = 'hadir';
-        if ($jamSekarang->gt($jamMasuk)) {
-            $status = 'terlambat';
-        }
         
         // Handle base64 photo data
         $fotoData = $request->foto;
@@ -187,22 +186,27 @@ class KaryawanController extends Controller
             'tanggal' => $today,
             'jam_masuk' => $jamSekarang->format('H:i:s'),
             'status' => $status,
+            'dinas_luar' => $isDinasLuar,
+            'alasan_dinas_luar' => $isDinasLuar ? $request->alasan_dinas_luar : null,
             'foto_masuk' => $fotoPath,
             'lokasi_masuk' => $request->latitude . ',' . $request->longitude,
             'keterangan' => $request->keterangan
         ]);
         
+        $message = $isDinasLuar ? 'Absen dinas luar berhasil' : 'Absen masuk berhasil';
+        
         return response()->json([
             'success' => true,
-            'message' => 'Absen masuk berhasil',
+            'message' => $message,
             'data' => [
                 'absensi' => $absensi,
                 'calculated_distance' => round($distance, 2),
                 'office_radius' => $lokasiKantor->radius,
-                'within_radius' => true,
+                'within_radius' => $distance <= $lokasiKantor->radius,
                 'user_coords' => [$request->latitude, $request->longitude],
                 'office_coords' => [$lokasiKantor->latitude, $lokasiKantor->longitude],
-                'status' => 'Dalam radius'
+                'status' => $isDinasLuar ? 'Dinas Luar' : ($distance <= $lokasiKantor->radius ? 'Dalam radius' : 'Luar radius'),
+                'dinas_luar' => $isDinasLuar
             ]
         ]);
     }
@@ -387,7 +391,6 @@ class KaryawanController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6|confirmed',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
         
         if ($validator->fails()) {
@@ -401,10 +404,6 @@ class KaryawanController extends Controller
         
         if ($request->filled('password')) {
             $data['password'] = bcrypt($request->password);
-        }
-        
-        if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('profile', 'public');
         }
         
         $user->update($data);

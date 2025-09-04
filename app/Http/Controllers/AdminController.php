@@ -98,7 +98,7 @@ class AdminController extends Controller
             'jam_kerja_masuk' => 'required|date_format:H:i',
             'jam_kerja_pulang' => 'required|date_format:H:i|after:jam_kerja_masuk',
             'lokasi_kantor_id' => 'required|exists:lokasi_kantors,id',
-            'status' => 'required|in:aktif,nonaktif',
+            'password' => 'nullable|string|min:6',
         ]);
 
         if ($validator->fails()) {
@@ -107,15 +107,21 @@ class AdminController extends Controller
 
         $jamKerja = $request->jam_kerja_masuk . ' - ' . $request->jam_kerja_pulang;
 
-        $karyawan->update([
+        $updateData = [
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
             'jabatan' => $request->jabatan,
             'jam_kerja' => $jamKerja,
             'lokasi_kantor_id' => $request->lokasi_kantor_id,
-            'status' => $request->status,
-        ]);
+        ];
+
+        // Update password only if provided
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        $karyawan->update($updateData);
 
         return redirect()->route('admin.karyawan.index')->with('success', 'Data karyawan berhasil diupdate');
     }

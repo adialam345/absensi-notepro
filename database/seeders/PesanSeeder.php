@@ -14,6 +14,9 @@ class PesanSeeder extends Seeder
      */
     public function run(): void
     {
+        // Clear existing pesan first
+        Pesan::truncate();
+        
         // Get admin user (pengirim)
         $admin = User::where('role', 'admin')->first();
         
@@ -55,6 +58,9 @@ class PesanSeeder extends Seeder
             }
             
             $this->command->info('Test pesan berhasil dibuat!');
+            $this->command->info('Karyawan: ' . $karyawan->first()->name . ' (ID: ' . $karyawan->first()->id . ')');
+            $this->command->info('Total pesan: ' . Pesan::count());
+            $this->command->info('Pesan belum dibaca: ' . Pesan::where('penerima_id', $karyawan->first()->id)->where('dibaca', false)->count());
         } else {
             $this->command->error('Admin atau karyawan tidak ditemukan. Pastikan seeder User sudah dijalankan.');
         }

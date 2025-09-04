@@ -77,7 +77,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('karyawan.profile.update') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('karyawan.profile.update') }}" method="POST">
                     @csrf
                     @method('PUT')
                     
@@ -99,18 +99,10 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm">
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-6">
                         <label class="block text-xs font-medium text-gray-700 mb-1">Konfirmasi Password</label>
                         <input type="password" name="password_confirmation" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm">
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Foto Profil (Opsional)</label>
-                        <input type="file" name="foto" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff040c] text-sm"
-                            accept="image/*">
-                        <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG (Max: 2MB)</p>
                     </div>
 
                     <button type="submit" 
@@ -133,15 +125,13 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Unread count data:', data); // Debug log
-                    
                     const bellBadge = document.getElementById('bellBadge');
                     
                     if (data.unread_count > 0) {
                         // Update bell badge
                         if (bellBadge) {
                             bellBadge.textContent = data.unread_count;
-                            bellBadge.classList.remove('hidden');
+                            bellBadge.style.display = 'flex';
                         }
                         
                         // Add bounce animation to bell icon
@@ -154,7 +144,7 @@
                         }
                     } else {
                         // Hide badge
-                        if (bellBadge) bellBadge.classList.add('hidden');
+                        if (bellBadge) bellBadge.style.display = 'none';
                     }
                 })
                 .catch(error => {
