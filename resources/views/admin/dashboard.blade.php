@@ -106,6 +106,17 @@
                 </div>
                 <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
             </a>
+            
+            <a href="{{ route('admin.pesan.index') }}" class="bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex items-center space-x-3">
+                <div class="w-8 h-8 bg-[#ff040c] rounded-lg flex items-center justify-center">
+                    <i class="fas fa-envelope text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-medium text-gray-800 text-sm">Kirim Pesan</h3>
+                    <p class="text-xs text-gray-500">Kirim pesan dan peringatan ke karyawan</p>
+                </div>
+                <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+            </a>
         </div>
     </div>
 

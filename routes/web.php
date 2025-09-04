@@ -253,6 +253,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     
     // Export Data
     Route::get('/admin/export/karyawan', [AdminController::class, 'exportKaryawan'])->name('admin.export.karyawan');
+    
+    // Pesan Routes
+    Route::get('/admin/pesan', [App\Http\Controllers\AdminPesanController::class, 'index'])->name('admin.pesan.index');
+    Route::post('/admin/pesan', [App\Http\Controllers\AdminPesanController::class, 'store'])->name('admin.pesan.store');
+    Route::get('/admin/pesan/history', [App\Http\Controllers\AdminPesanController::class, 'history'])->name('admin.pesan.history');
 });
 
 Route::middleware(['auth', 'role:karyawan'])->group(function () {
@@ -281,4 +286,10 @@ Route::middleware(['auth', 'role:karyawan'])->group(function () {
     // Profile
     Route::get('/karyawan/profile', [App\Http\Controllers\KaryawanController::class, 'profile'])->name('karyawan.profile');
     Route::put('/karyawan/profile', [App\Http\Controllers\KaryawanController::class, 'updateProfile'])->name('karyawan.profile.update');
+    
+    // Pesan Routes
+    Route::get('/karyawan/pesan', [App\Http\Controllers\KaryawanPesanController::class, 'index'])->name('karyawan.pesan.index');
+    Route::get('/karyawan/pesan/{id}', [App\Http\Controllers\KaryawanPesanController::class, 'show'])->name('karyawan.pesan.show');
+    Route::post('/karyawan/pesan/{id}/mark-read', [App\Http\Controllers\KaryawanPesanController::class, 'markAsRead'])->name('karyawan.pesan.mark-read');
+    Route::get('/karyawan/pesan/unread-count', [App\Http\Controllers\KaryawanPesanController::class, 'getUnreadCount'])->name('karyawan.pesan.unread-count');
 });

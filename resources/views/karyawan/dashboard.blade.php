@@ -69,9 +69,10 @@
                 </div>
                 <span class="text-xs text-gray-700">Profil</span>
             </a>
-            <a href="#" class="text-center">
-                <div class="w-10 h-10 bg-[#ff040c] rounded-xl flex items-center justify-center mx-auto mb-2">
+            <a href="{{ route('karyawan.pesan.index') }}" class="text-center">
+                <div class="w-10 h-10 bg-[#ff040c] rounded-xl flex items-center justify-center mx-auto mb-2 relative">
                     <i class="fas fa-envelope text-white text-sm"></i>
+                    <span id="pesanBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                 </div>
                 <span class="text-xs text-gray-700">Pesan</span>
             </a>
@@ -168,25 +169,36 @@
         <h2 class="text-sm font-semibold text-gray-800 mb-3">1 Minggu Terakhir</h2>
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <div class="bg-[#ff040c] text-white px-3 py-2">
-                <div class="grid grid-cols-3 text-xs font-medium">
+                <div class="grid grid-cols-4 text-xs font-medium">
                     <span>Tanggal</span>
                     <span>Jam Masuk</span>
                     <span>Jam Pulang</span>
+                    <span>Status</span>
                 </div>
             </div>
             @if($lastWeek && $lastWeek->count() > 0)
                 <div class="divide-y divide-gray-200">
                     @foreach($lastWeek->take(7) as $absensi)
-                        <div class="grid grid-cols-3 px-3 py-2 text-xs">
+                        <div class="grid grid-cols-4 px-3 py-2 text-xs">
                             <span class="text-gray-800">{{ \Carbon\Carbon::parse($absensi->tanggal)->format('d/m') }}</span>
                             <span class="text-gray-600">{{ $absensi->jam_masuk ?: '-' }}</span>
                             <span class="text-gray-600">{{ $absensi->jam_pulang ?: '-' }}</span>
+                            <span class="text-xs font-medium {{ $absensi->status === 'terlambat' ? 'text-red-600' : ($absensi->status === 'hadir' ? 'text-green-600' : 'text-gray-400') }}">
+                                @if($absensi->status === 'terlambat')
+                                    Terlambat
+                                @elseif($absensi->status === 'hadir')
+                                    Tepat Waktu
+                                @else
+                                    -
+                                @endif
+                            </span>
                         </div>
                     @endforeach
                     
                     @if($lastWeek->count() < 7)
                         @for($i = $lastWeek->count(); $i < 7; $i++)
-                            <div class="grid grid-cols-3 px-3 py-2 text-xs">
+                            <div class="grid grid-cols-4 px-3 py-2 text-xs">
+                                <span class="text-gray-400">-</span>
                                 <span class="text-gray-400">-</span>
                                 <span class="text-gray-400">-</span>
                                 <span class="text-gray-400">-</span>
@@ -197,7 +209,8 @@
             @else
                 <div class="divide-y divide-gray-200">
                     @for($i = 0; $i < 7; $i++)
-                        <div class="grid grid-cols-3 px-3 py-2 text-xs">
+                        <div class="grid grid-cols-4 px-3 py-2 text-xs">
+                            <span class="text-gray-400">-</span>
                             <span class="text-gray-400">-</span>
                             <span class="text-gray-400">-</span>
                             <span class="text-gray-400">-</span>
@@ -266,9 +279,27 @@
                 .catch(error => console.error('Error refreshing data:', error));
         }
 
+        // Load unread message count
+        function loadUnreadCount() {
+            fetch('{{ route("karyawan.pesan.unread-count") }}')
+                .then(response => response.json())
+                .then(data => {
+                    const pesanBadge = document.getElementById('pesanBadge');
+                    if (data.unread_count > 0) {
+                        pesanBadge.textContent = data.unread_count;
+                        pesanBadge.classList.remove('hidden');
+                    } else {
+                        pesanBadge.classList.add('hidden');
+                    }
+                })
+                .catch(error => console.error('Error loading unread count:', error));
+        }
+
         // Start auto-refresh
         document.addEventListener('DOMContentLoaded', function() {
             setInterval(refreshAttendanceData, 5000);
+            loadUnreadCount(); // Load unread count on page load
+            setInterval(loadUnreadCount, 10000); // Refresh unread count every 10 seconds
         });
     </script>
 </body>
