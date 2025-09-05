@@ -30,6 +30,98 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('totalKaryawan', 'karyawanAktif', 'totalLokasi', 'recentActivities'));
     }
 
+    public function statistik()
+    {
+        // Get current month data
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+        
+        // Attendance statistics for current month
+        $absensiStats = Absensi::whereMonth('tanggal', $currentMonth)
+            ->whereYear('tanggal', $currentYear)
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+        
+        // Daily attendance trend (last 30 days)
+        $dailyTrend = Absensi::where('tanggal', '>=', now()->subDays(30))
+            ->selectRaw('DATE(tanggal) as date, COUNT(*) as total, 
+                        SUM(CASE WHEN status = "hadir" THEN 1 ELSE 0 END) as hadir,
+                        SUM(CASE WHEN status = "terlambat" THEN 1 ELSE 0 END) as terlambat,
+                        SUM(CASE WHEN status = "sakit" THEN 1 ELSE 0 END) as sakit,
+                        SUM(CASE WHEN status = "izin" THEN 1 ELSE 0 END) as izin')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        
+        // Employee performance (top 10)
+        $employeePerformance = User::where('role', 'karyawan')
+            ->withCount(['absensi as total_absensi' => function($query) use ($currentMonth, $currentYear) {
+                $query->whereMonth('tanggal', $currentMonth)
+                      ->whereYear('tanggal', $currentYear);
+            }])
+            ->withCount(['absensi as hadir_count' => function($query) use ($currentMonth, $currentYear) {
+                $query->whereMonth('tanggal', $currentMonth)
+                      ->whereYear('tanggal', $currentYear)
+                      ->where('status', 'hadir');
+            }])
+            ->withCount(['absensi as terlambat_count' => function($query) use ($currentMonth, $currentYear) {
+                $query->whereMonth('tanggal', $currentMonth)
+                      ->whereYear('tanggal', $currentYear)
+                      ->where('status', 'terlambat');
+            }])
+            ->having('total_absensi', '>', 0)
+            ->get()
+            ->map(function($user) {
+                $user->attendance_rate = $user->total_absensi > 0 ? 
+                    round(($user->hadir_count / $user->total_absensi) * 100, 1) : 0;
+                return $user;
+            })
+            ->sortByDesc('attendance_rate')
+            ->take(10);
+        
+        // Leave statistics
+        $leaveStats = IzinCuti::whereMonth('tanggal_mulai', $currentMonth)
+            ->whereYear('tanggal_mulai', $currentYear)
+            ->selectRaw('tipe, status, COUNT(*) as count')
+            ->groupBy('tipe', 'status')
+            ->get();
+        
+        // Department statistics (using jabatan instead of divisi)
+        $departmentStats = User::where('role', 'karyawan')
+            ->selectRaw('jabatan, COUNT(*) as total_karyawan')
+            ->groupBy('jabatan')
+            ->get();
+        
+        // Monthly comparison (current vs previous month)
+        $currentMonthData = Absensi::whereMonth('tanggal', $currentMonth)
+            ->whereYear('tanggal', $currentYear)
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+        
+        $previousMonth = $currentMonth == 1 ? 12 : $currentMonth - 1;
+        $previousYear = $currentMonth == 1 ? $currentYear - 1 : $currentYear;
+        
+        $previousMonthData = Absensi::whereMonth('tanggal', $previousMonth)
+            ->whereYear('tanggal', $previousYear)
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+        
+        return view('admin.statistik', compact(
+            'absensiStats',
+            'dailyTrend',
+            'employeePerformance',
+            'leaveStats',
+            'departmentStats',
+            'currentMonthData',
+            'previousMonthData',
+            'currentMonth',
+            'currentYear'
+        ));
+    }
+
     // CRUD Karyawan
     public function indexKaryawan()
     {

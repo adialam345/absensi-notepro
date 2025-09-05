@@ -46,7 +46,7 @@
     <!-- Main Management -->
     <div class="px-4 py-3">
         <h2 class="text-sm font-semibold text-gray-700 mb-3">Manajemen Utama</h2>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
             <a href="{{ route('admin.karyawan.index') }}" class="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow text-center">
                 <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center mx-auto mb-2">
                     <i class="fas fa-users text-white text-sm"></i>
@@ -86,42 +86,17 @@
                 <h3 class="font-medium text-gray-800 text-xs mb-1">Kirim Pesan</h3>
                 <p class="text-xs text-gray-500">Kirim pesan ke karyawan</p>
             </a>
+            
+            <a href="{{ route('admin.statistik') }}" class="bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow text-center">
+                <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <i class="fas fa-chart-line text-white text-sm"></i>
+                </div>
+                <h3 class="font-medium text-gray-800 text-xs mb-1">Statistik</h3>
+                <p class="text-xs text-gray-500">Lihat statistik kehadiran</p>
+            </a>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="px-4 py-3">
-        <h2 class="text-sm font-semibold text-gray-700 mb-3">Aksi Cepat</h2>
-        <div class="grid grid-cols-3 gap-3">
-            <a href="{{ route('admin.karyawan.create') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-user-plus text-white text-sm"></i>
-                </div>
-                <span class="text-xs font-medium text-gray-700">Tambah Karyawan</span>
-            </a>
-            
-            <a href="{{ route('admin.export.karyawan') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-download text-white text-sm"></i>
-                </div>
-                <span class="text-xs font-medium text-gray-700">Export Karyawan</span>
-            </a>
-            
-            <a href="{{ route('admin.export.absensi') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-file-csv text-white text-sm"></i>
-                </div>
-                <span class="text-xs font-medium text-gray-700">Export Absensi</span>
-            </a>
-            
-            <a href="{{ route('admin.lokasi.create') }}" class="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow text-center">
-                <div class="w-8 h-8 bg-[#fb0302] rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <i class="fas fa-plus text-white text-sm"></i>
-                </div>
-                <span class="text-xs font-medium text-gray-700">Tambah Lokasi</span>
-            </a>
-        </div>
-    </div>
 
     <!-- Recent Employee Activities -->
     <div class="px-4 py-3">
