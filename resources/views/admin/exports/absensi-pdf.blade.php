@@ -35,28 +35,29 @@
             color: #ff040c;
             margin-top: 0;
         }
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 15px;
+        .summary-table {
+            width: 100%;
             margin-top: 15px;
+            border-collapse: separate;
+            border-spacing: 8px;
         }
         .summary-item {
             background: white;
-            padding: 15px;
+            padding: 10px;
             border-radius: 5px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 16.66%;
         }
         .summary-item .number {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #ff040c;
         }
         .summary-item .label {
-            font-size: 12px;
+            font-size: 10px;
             color: #666;
-            margin-top: 5px;
+            margin-top: 3px;
         }
         .section {
             margin-bottom: 40px;
@@ -103,6 +104,23 @@
             border-top: 1px solid #ddd;
             padding-top: 20px;
         }
+        
+        /* Print/PDF specific styles */
+        @media print {
+            body { margin: 0; }
+            .summary-table {
+                width: 100% !important;
+                border-collapse: separate !important;
+                border-spacing: 8px !important;
+                page-break-inside: avoid;
+            }
+            .summary-item {
+                width: 16.66% !important;
+                page-break-inside: avoid;
+            }
+            table { page-break-inside: avoid; }
+            .section { page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body>
@@ -124,32 +142,34 @@
 
     <div class="summary">
         <h3>Ringkasan Data</h3>
-        <div class="summary-grid">
-            <div class="summary-item">
-                <div class="number">{{ $summary['hadir'] }}</div>
-                <div class="label">Total Hadir</div>
-            </div>
-            <div class="summary-item">
-                <div class="number">{{ $summary['terlambat'] }}</div>
-                <div class="label">Terlambat</div>
-            </div>
-            <div class="summary-item">
-                <div class="number">{{ $summary['izin'] }}</div>
-                <div class="label">Izin</div>
-            </div>
-            <div class="summary-item">
-                <div class="number">{{ $summary['sakit'] }}</div>
-                <div class="label">Sakit</div>
-            </div>
-            <div class="summary-item">
-                <div class="number">{{ $summary['cuti'] }}</div>
-                <div class="label">Cuti</div>
-            </div>
-            <div class="summary-item">
-                <div class="number">{{ $summary['dinas_luar'] }}</div>
-                <div class="label">Dinas Luar</div>
-            </div>
-        </div>
+        <table class="summary-table">
+            <tr>
+                <td class="summary-item">
+                    <div class="number">{{ $summary['hadir'] }}</div>
+                    <div class="label">Total Hadir</div>
+                </td>
+                <td class="summary-item">
+                    <div class="number">{{ $summary['terlambat'] }}</div>
+                    <div class="label">Terlambat</div>
+                </td>
+                <td class="summary-item">
+                    <div class="number">{{ $summary['izin'] }}</div>
+                    <div class="label">Izin</div>
+                </td>
+                <td class="summary-item">
+                    <div class="number">{{ $summary['sakit'] }}</div>
+                    <div class="label">Sakit</div>
+                </td>
+                <td class="summary-item">
+                    <div class="number">{{ $summary['cuti'] }}</div>
+                    <div class="label">Cuti</div>
+                </td>
+                <td class="summary-item">
+                    <div class="number">{{ $summary['dinas_luar'] }}</div>
+                    <div class="label">Dinas Luar</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="section">

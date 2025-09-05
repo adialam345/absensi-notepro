@@ -9,6 +9,10 @@ use App\Models\IzinCuti;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class AdminController extends Controller
 {
@@ -486,76 +490,114 @@ class AdminController extends Controller
         
         $izinCuti = $izinCutiQuery->orderBy('tanggal_mulai', 'desc')->get();
         
-        // Create Excel content
-        $filename = 'laporan_absensi_' . date('Y-m-d') . '.xlsx';
+        // Generate filename
+        $filename = 'laporan_absensi_' . date('Y-m-d') . '.csv';
         
-        // For now, we'll create a CSV with Excel extension (can be improved with PhpSpreadsheet later)
-        $handle = fopen('php://temp', 'r+');
+        // Create CSV content with professional template
+        $csvContent = '';
         
-        // Header
-        fputcsv($handle, [
-            'TANGGAL', 
-            'NAMA KARYAWAN', 
-            'JAM MASUK', 
-            'JAM PULANG', 
-            'STATUS', 
-            'DINAS LUAR',
-            'ALASAN DINAS LUAR',
-            'KETERANGAN',
-            'LOKASI MASUK',
-            'LOKASI PULANG'
-        ]);
+        // Add BOM for UTF-8
+        $csvContent .= "\xEF\xBB\xBF";
         
-        // Attendance data
+        // Period info
+        $period = '';
+        if ($request->filled('month') && $request->filled('year')) {
+            $period = date('F', mktime(0, 0, 0, $request->month, 1)) . ' ' . $request->year;
+        } elseif ($request->filled('month')) {
+            $period = date('F', mktime(0, 0, 0, $request->month, 1)) . ' ' . date('Y');
+        } elseif ($request->filled('year')) {
+            $period = $request->year;
+        } else {
+            $period = date('F Y');
+        }
+        
+        // Company Header Template
+        $companyName = config('app.company_name', 'PT. NAMA PERUSAHAAN');
+        $csvContent .= $companyName . "\n";
+        $csvContent .= "SISTEM ABSENSI KARYAWAN\n";
+        $csvContent .= "==========================================\n\n";
+        
+        // Report Header
+        $csvContent .= "LAPORAN ABSENSI KARYAWAN\n";
+        $csvContent .= "Periode: " . $period . "\n";
+        $csvContent .= "Tanggal Cetak: " . date('d/m/Y H:i:s') . "\n";
+        $csvContent .= "Dibuat Oleh: Admin Sistem\n";
+        $csvContent .= "Sistem: Laravel " . app()->version() . "\n\n";
+        
+        // Summary Section
+        $csvContent .= "RINGKASAN DATA\n";
+        $csvContent .= "==========================================\n";
+        $csvContent .= "Total Data Absensi: " . $absensi->count() . " record\n";
+        $csvContent .= "Total Data Cuti/Izin: " . $izinCuti->count() . " record\n";
+        $csvContent .= "Total Karyawan: " . $absensi->pluck('user_id')->unique()->count() . " orang\n";
+        
+        // Status Summary
+        $statusSummary = $absensi->groupBy('status')->map->count();
+        $csvContent .= "\nRINGKASAN STATUS ABSENSI:\n";
+        foreach ($statusSummary as $status => $count) {
+            $csvContent .= "- " . ucfirst($status) . ": " . $count . " record\n";
+        }
+        
+        // Leave Type Summary
+        if ($izinCuti->count() > 0) {
+            $leaveSummary = $izinCuti->groupBy('tipe')->map->count();
+            $csvContent .= "\nRINGKASAN TIPE CUTI/IZIN:\n";
+            foreach ($leaveSummary as $tipe => $count) {
+                $csvContent .= "- " . ucfirst($tipe) . ": " . $count . " record\n";
+            }
+        }
+        
+        $csvContent .= "\n";
+        
+        // Attendance Data Section
+        $csvContent .= "DATA ABSENSI KARYAWAN\n";
+        $csvContent .= "==========================================\n";
+        $csvContent .= "No,Tanggal,Nama Karyawan,Jam Masuk,Jam Pulang,Status,Dinas Luar,Alasan Dinas Luar,Keterangan,Lokasi Masuk,Lokasi Pulang\n";
+        
+        // Attendance data with numbering
+        $no = 1;
         foreach ($absensi as $a) {
-            fputcsv($handle, [
-                $a->tanggal,
-                $a->user->name ?? 'N/A',
-                $a->jam_masuk ?? '-',
-                $a->jam_pulang ?? '-',
-                ucfirst($a->status),
-                $a->dinas_luar ? 'Ya' : 'Tidak',
-                $a->alasan_dinas_luar ?? '-',
-                $a->keterangan ?? '-',
-                $a->lokasi_masuk ?? '-',
-                $a->lokasi_pulang ?? '-'
-            ]);
+            $csvContent .= $no . ',"' . ($a->tanggal ? \Carbon\Carbon::parse($a->tanggal)->format('d/m/Y') : '-') . '",';
+            $csvContent .= '"' . ($a->user->name ?? 'N/A') . '",';
+            $csvContent .= '"' . ($a->jam_masuk ?? '-') . '",';
+            $csvContent .= '"' . ($a->jam_pulang ?? '-') . '",';
+            $csvContent .= '"' . ($a->status ? ucfirst($a->status) : '-') . '",';
+            $csvContent .= '"' . ($a->dinas_luar ? 'Ya' : 'Tidak') . '",';
+            $csvContent .= '"' . ($a->alasan_dinas_luar ?? '-') . '",';
+            $csvContent .= '"' . ($a->keterangan ?? '-') . '",';
+            $csvContent .= '"' . ($a->lokasi_masuk ?? '-') . '",';
+            $csvContent .= '"' . ($a->lokasi_pulang ?? '-') . '"' . "\n";
+            $no++;
         }
         
-        // Add empty row separator
-        fputcsv($handle, []);
-        fputcsv($handle, ['DATA CUTI/IZIN KARYAWAN']);
-        fputcsv($handle, []);
+        // Leave Data Section
+        $csvContent .= "\nDATA CUTI/IZIN KARYAWAN\n";
+        $csvContent .= "==========================================\n";
+        $csvContent .= "No,Tanggal Mulai,Tanggal Selesai,Nama Karyawan,Tipe,Status,Keterangan\n";
         
-        // Leave data header
-        fputcsv($handle, [
-            'TANGGAL MULAI',
-            'TANGGAL SELESAI', 
-            'NAMA KARYAWAN',
-            'TIPE',
-            'STATUS',
-            'KETERANGAN'
-        ]);
-        
-        // Leave data
+        // Leave data with numbering
+        $no = 1;
         foreach ($izinCuti as $ic) {
-            fputcsv($handle, [
-                $ic->tanggal_mulai,
-                $ic->tanggal_selesai,
-                $ic->user->name ?? 'N/A',
-                ucfirst($ic->tipe),
-                ucfirst($ic->status),
-                $ic->keterangan ?? '-'
-            ]);
+            $csvContent .= $no . ',"' . ($ic->tanggal_mulai ? \Carbon\Carbon::parse($ic->tanggal_mulai)->format('d/m/Y') : '-') . '",';
+            $csvContent .= '"' . ($ic->tanggal_selesai ? \Carbon\Carbon::parse($ic->tanggal_selesai)->format('d/m/Y') : '-') . '",';
+            $csvContent .= '"' . ($ic->user->name ?? 'N/A') . '",';
+            $csvContent .= '"' . ($ic->tipe ? ucfirst($ic->tipe) : '-') . '",';
+            $csvContent .= '"' . ($ic->status ? ucfirst($ic->status) : '-') . '",';
+            $csvContent .= '"' . ($ic->keterangan ?? '-') . '"' . "\n";
+            $no++;
         }
         
-        rewind($handle);
-        $content = stream_get_contents($handle);
-        fclose($handle);
+        // Footer
+        $csvContent .= "\n==========================================\n";
+        $csvContent .= "Laporan ini dibuat secara otomatis oleh sistem absensi\n";
+        $csvContent .= "© " . date('Y') . " - " . $companyName . "\n";
+        $csvContent .= "==========================================\n";
         
-        return response($content)
-            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        // Return CSV file
+        return response($csvContent)
+            ->header('Content-Type', 'text/csv; charset=utf-8')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Cache-Control', 'max-age=0');
     }
 
     public function exportAbsensiPDF(Request $request)
@@ -657,14 +699,22 @@ class AdminController extends Controller
             'dinas_luar' => (clone $summaryQuery)->where('dinas_luar', true)->count(),
         ];
         
-        // Create HTML content for PDF
-        $html = view('admin.exports.absensi-pdf', compact('absensi', 'izinCuti', 'summary', 'request'))->render();
+        // Generate PDF using DomPDF
+        $pdf = Pdf::loadView('admin.exports.absensi-pdf', compact('absensi', 'izinCuti', 'summary', 'request'));
         
-        // For now, return HTML (can be improved with DomPDF or similar later)
-        $filename = 'laporan_absensi_' . date('Y-m-d') . '.html';
+        // Set paper size and orientation
+        $pdf->setPaper('A4', 'landscape');
         
-        return response($html)
-            ->header('Content-Type', 'text/html')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        // Set options for better CSS rendering
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'defaultFont' => 'Arial'
+        ]);
+        
+        $filename = 'laporan_absensi_' . date('Y-m-d') . '.pdf';
+        
+        // Download PDF
+        return $pdf->download($filename);
     }
 }

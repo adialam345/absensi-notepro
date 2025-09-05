@@ -62,7 +62,7 @@
             <h3 class="text-lg font-semibold mb-4" style="color: #ff040c;">Export Data</h3>
             <div class="flex flex-wrap gap-4">
                 <a href="{{ route('admin.export.absensi.excel', request()->query()) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-file-excel mr-2"></i>Export Excel
+                    <i class="fas fa-file-csv mr-2"></i>Export CSV
                 </a>
                 <a href="{{ route('admin.export.absensi.pdf', request()->query()) }}" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
                     <i class="fas fa-file-pdf mr-2"></i>Export PDF
