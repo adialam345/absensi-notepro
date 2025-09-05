@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <x-admin-navbar title="Lokasi Kantor" />
+    <x-admin-navbar title="Lokasi Kantor" subtitle="Manajemen Lokasi Kantor" />
 
     <!-- Content -->
     <div class="p-4">

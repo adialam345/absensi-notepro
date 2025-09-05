@@ -247,6 +247,14 @@ class AdminController extends Controller
         return view('admin.laporan.absensi', compact('absensi', 'karyawan', 'summary'));
     }
 
+    // View Foto Absensi
+    public function viewFotoAbsensi($id)
+    {
+        $absensi = Absensi::with('user')->findOrFail($id);
+        
+        return view('admin.absensi.foto', compact('absensi'));
+    }
+
     // Kelola Cuti & Izin
     public function indexCuti(Request $request)
     {

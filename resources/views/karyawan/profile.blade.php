@@ -10,22 +10,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('karyawan.dashboard') }}" class="text-white">
-                    <i class="fas fa-arrow-left text-lg"></i>
-                </a>
-                <span class="font-semibold text-sm">Profil Saya</span>
-            </div>
-            <div class="flex items-center space-x-2">
-                <div class="relative">
-                    <i id="bellIcon" class="fas fa-bell text-lg"></i>
-                    <span id="bellBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden font-bold">0</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-karyawan-navbar title="Profil Saya" subtitle="Informasi Personal" />
 
     <!-- Content -->
     <div class="p-4">

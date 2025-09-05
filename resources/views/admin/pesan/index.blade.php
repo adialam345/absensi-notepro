@@ -13,6 +13,7 @@
     <!-- Header -->
     <x-admin-navbar 
         title="Kirim Pesan" 
+        subtitle="Komunikasi dengan Karyawan"
         :actions="[
             ['url' => route('admin.pesan.history'), 'icon' => 'fas fa-history', 'text' => 'History']
         ]" 

@@ -9,23 +9,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-bars text-lg"></i>
-                <div class="flex items-center space-x-2">
-                    <div class="w-6 h-6 bg-white rounded flex items-center justify-center">
-                        <div class="w-3 h-3 bg-[#ff040c] transform rotate-45"></div>
-                    </div>
-                    <span class="font-semibold text-sm">ASRI PROJECT</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-bell text-lg"></i>
-                <i class="fas fa-user-circle text-xl"></i>
-            </div>
-        </div>
-    </div>
+    <x-admin-navbar title="Dashboard" subtitle="ASRI PROJECT" />
 
     <!-- User Greeting -->
     <div class="bg-white rounded-t-2xl -mt-1 p-4 shadow-sm">
@@ -141,41 +125,78 @@
 
     <!-- Recent Employee Activities -->
     <div class="px-4 py-3">
-        <h2 class="text-sm font-semibold text-gray-700 mb-3">Aktivitas Terbaru</h2>
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-700">Aktivitas Terbaru</h2>
+            <a href="{{ route('admin.laporan.absensi') }}" class="text-xs text-[#ff040c] hover:text-[#fb0302] transition-colors">
+                Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div class="bg-[#ff040c] text-white px-3 py-2">
-                <div class="grid grid-cols-3 text-xs font-medium">
-                    <span>Waktu</span>
-                    <span>Karyawan</span>
-                    <span>Aktivitas</span>
+            <div class="bg-[#ff040c] text-white px-4 py-3">
+                <div class="grid grid-cols-12 gap-2 text-xs font-medium">
+                    <div class="col-span-3">Waktu</div>
+                    <div class="col-span-4">Karyawan</div>
+                    <div class="col-span-3">Status</div>
+                    <div class="col-span-2 text-center">Foto</div>
                 </div>
             </div>
-            <div class="p-3 max-h-32 overflow-y-auto">
+            <div class="max-h-40 overflow-y-auto">
                 @if(isset($recentActivities) && $recentActivities->count() > 0)
                     @foreach($recentActivities->take(5) as $activity)
-                        <div class="flex items-center justify-between py-1 {{ !$loop->last ? 'border-b border-gray-100' : '' }}">
-                            <span class="text-xs text-gray-600">{{ $activity->jam_masuk ?? 'N/A' }}</span>
-                            <span class="text-xs text-gray-800">{{ $activity->user->name ?? 'Unknown' }}</span>
-                            <span class="text-xs text-gray-600">{{ $activity->status ?? 'Absen masuk' }}</span>
+                        <div class="grid grid-cols-12 gap-2 items-center px-4 py-3 {{ !$loop->last ? 'border-b border-gray-100' : '' }} hover:bg-gray-50 transition-colors">
+                            <div class="col-span-3">
+                                <div class="text-xs font-medium text-gray-900">
+                                    {{ $activity->jam_masuk ? \Carbon\Carbon::parse($activity->jam_masuk)->format('H:i') : 'N/A' }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ \Carbon\Carbon::parse($activity->tanggal)->format('d/m') }}
+                                </div>
+                            </div>
+                            <div class="col-span-4">
+                                <div class="text-xs font-medium text-gray-900 truncate">
+                                    {{ $activity->user->name ?? 'Unknown' }}
+                                </div>
+                                <div class="text-xs text-gray-500 truncate">
+                                    {{ $activity->user->jabatan ?? '' }}
+                                </div>
+                            </div>
+                            <div class="col-span-3">
+                                @php
+                                    $statusColors = [
+                                        'hadir' => 'bg-green-100 text-green-800',
+                                        'terlambat' => 'bg-yellow-100 text-yellow-800',
+                                        'izin' => 'bg-blue-100 text-blue-800',
+                                        'sakit' => 'bg-red-100 text-red-800'
+                                    ];
+                                @endphp
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$activity->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                    {{ ucfirst($activity->status ?? 'Absen') }}
+                                </span>
+                            </div>
+                            <div class="col-span-2 text-center">
+                                @if($activity->foto_masuk || $activity->foto_pulang)
+                                    <a href="{{ route('admin.absensi.foto', $activity->id) }}" 
+                                       class="inline-flex items-center justify-center w-7 h-7 bg-[#ff040c] text-white rounded-full hover:bg-[#fb0302] transition-colors shadow-sm"
+                                       title="Lihat Foto">
+                                        <i class="fas fa-camera text-xs"></i>
+                                    </a>
+                                @else
+                                    <div class="inline-flex items-center justify-center w-7 h-7 bg-gray-100 text-gray-400 rounded-full">
+                                        <i class="fas fa-camera text-xs"></i>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 @else
-                    <div class="p-2 text-center text-gray-500">
-                        <p class="text-xs">Belum ada aktivitas</p>
+                    <div class="p-6 text-center text-gray-500">
+                        <i class="fas fa-clock text-2xl mb-2 text-gray-300"></i>
+                        <p class="text-xs">Belum ada aktivitas absensi</p>
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
-    <!-- Logout Button -->
-    <div class="px-4 py-3 pb-6">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="w-full bg-[#fb0302] text-white py-2.5 rounded-xl font-medium hover:bg-[#ff040c] transition-colors text-sm">
-                Logout
-            </button>
-        </form>
-    </div>
 </body>
 </html>

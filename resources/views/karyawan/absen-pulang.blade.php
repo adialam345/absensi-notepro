@@ -9,16 +9,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <a href="{{ route('karyawan.dashboard') }}" class="text-white">
-                    <i class="fas fa-arrow-left text-lg"></i>
-                </a>
-                <span class="font-semibold text-sm">Absen Pulang</span>
-            </div>
-        </div>
-    </div>
+    <x-karyawan-navbar title="Absen Pulang" subtitle="ABSEN PROJECT" />
 
     <!-- Content -->
     <div class="p-4">

@@ -11,6 +11,7 @@
     <!-- Header -->
     <x-admin-navbar 
         title="Kelola Karyawan" 
+        subtitle="Manajemen Data Karyawan"
         :actions="[
             ['url' => route('admin.export.karyawan'), 'icon' => 'fas fa-download', 'text' => 'Export']
         ]" 

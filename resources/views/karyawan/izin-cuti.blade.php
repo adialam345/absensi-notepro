@@ -12,18 +12,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <nav class="bg-[#ff040c] p-4 text-white font-bold flex justify-between items-center">
-        <div class="flex items-center space-x-4">
-            <a href="{{ route('karyawan.dashboard') }}" class="hover:text-gray-200">
-                <i class="fas fa-arrow-left mr-2"></i>Kembali ke Dashboard
-            </a>
-            <span>Izin & Cuti</span>
-        </div>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="bg-[#fb0302] px-4 py-1 rounded">Logout</button>
-        </form>
-    </nav>
+    <x-karyawan-navbar title="Izin & Cuti" subtitle="Pengajuan Izin dan Cuti" />
 
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto mt-6 px-4">

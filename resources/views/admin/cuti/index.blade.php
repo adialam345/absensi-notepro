@@ -14,7 +14,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <x-admin-navbar title="Kelola Cuti & Izin" />
+    <x-admin-navbar title="Kelola Cuti & Izin" subtitle="Persetujuan Pengajuan Cuti" />
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto mt-6 px-4">

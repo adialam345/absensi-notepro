@@ -10,7 +10,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <x-admin-navbar title="Laporan Absensi" />
+    <x-admin-navbar title="Laporan Absensi" subtitle="Data Kehadiran Karyawan" />
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto mt-6 px-4">
@@ -135,6 +135,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                         </tr>
                     </thead>
@@ -167,12 +168,23 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @if($a->foto_masuk || $a->foto_pulang)
+                                        <a href="{{ route('admin.absensi.foto', $a->id) }}" 
+                                           class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-[#ff040c] hover:bg-[#fb0302] transition-colors">
+                                            <i class="fas fa-camera mr-1"></i>
+                                            Lihat Foto
+                                        </a>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $a->keterangan ?? '-' }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
                                     Tidak ada data absensi untuk periode yang dipilih.
                                 </td>
                             </tr>

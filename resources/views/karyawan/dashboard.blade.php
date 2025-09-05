@@ -10,25 +10,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-bars text-lg"></i>
-                <div class="flex items-center space-x-2">
-                    <div class="w-6 h-6 bg-white rounded flex items-center justify-center">
-                        <div class="w-3 h-3 bg-[#ff040c] transform rotate-45"></div>
-                    </div>
-                    <span class="font-semibold text-sm">ASRI PROJECT</span>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <div class="relative">
-                    <i id="bellIcon" class="fas fa-bell text-lg"></i>
-                    <span id="bellBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold z-10" style="display: none;">0</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-karyawan-navbar title="Dashboard" subtitle="ASRI PROJECT" />
 
     <!-- User Greeting and Work Schedule -->
     <div class="bg-white rounded-t-2xl -mt-1 p-4 shadow-sm">
@@ -107,63 +89,147 @@
 
     <!-- Monthly Attendance Summary -->
     <div class="px-4 py-3">
-        <div class="flex justify-between items-center mb-3">
-            <h2 class="text-sm font-semibold text-gray-800">
-                Absensi Bulan <span class="text-[#ff040c]">{{ \Carbon\Carbon::now()->format('F') }}</span>
-            </h2>
-            <div class="flex items-center space-x-2">
-                <span class="text-gray-800 text-sm">{{ \Carbon\Carbon::now()->format('Y') }}</span>
-                <i class="fas fa-chevron-down text-gray-600 text-xs"></i>
+        <div class="bg-white rounded-xl p-4 shadow-sm mb-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-[#ff040c] rounded-lg flex items-center justify-center">
+                        <i class="fas fa-calendar-alt text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold text-gray-800">Ringkasan Absensi</h2>
+                        <p class="text-xs text-gray-500">
+                            Bulan <span class="text-[#ff040c] font-medium">{{ \Carbon\Carbon::now()->format('F Y') }}</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-xs text-gray-500">Total Hari Kerja</div>
+                    <div class="text-sm font-semibold text-[#ff040c]">
+                        {{ \Carbon\Carbon::now()->daysInMonth }} Hari
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="grid grid-cols-2 gap-3">
-            <div class="bg-white rounded-xl p-3 shadow-sm">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-[#ff040c] rounded-full flex items-center justify-center">
-                        <i class="fas fa-arrow-right text-white text-sm"></i>
+            <!-- Hadir -->
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 shadow-sm border border-green-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">Hadir</p>
+                            <p class="text-xs text-gray-600">{{ $hadir ?? 0 }} Hari</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="font-semibold text-gray-800 text-sm">Hadir</p>
-                        <p class="text-xs text-gray-600">{{ $hadir ?? 0 }} Hari</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl p-3 shadow-sm">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-[#ff040c] rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-white text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-800 text-sm">Izin</p>
-                        <p class="text-xs text-gray-600">{{ $izin ?? 0 }} Hari</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl p-3 shadow-sm">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-[#ff040c] rounded-full flex items-center justify-center">
-                        <i class="fas fa-sad-tear text-white text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-800 text-sm">Sakit</p>
-                        <p class="text-xs text-gray-600">{{ $sakit ?? 0 }} Hari</p>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-green-600">{{ $hadir ?? 0 }}</div>
+                        <div class="text-xs text-green-500">
+                            @php
+                                $totalDays = \Carbon\Carbon::now()->daysInMonth;
+                                $percentage = $totalDays > 0 ? round((($hadir ?? 0) / $totalDays) * 100, 1) : 0;
+                            @endphp
+                            {{ $percentage }}%
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-white rounded-xl p-3 shadow-sm">
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-[#ff040c] rounded-full flex items-center justify-center">
-                        <i class="fas fa-clock text-white text-sm"></i>
+            <!-- Izin -->
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-sm border border-blue-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-clock text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">Izin</p>
+                            <p class="text-xs text-gray-600">{{ $izin ?? 0 }} Hari</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="font-semibold text-gray-800 text-sm">Terlambat</p>
-                        <p class="text-xs text-gray-600">{{ $terlambat ?? 0 }} hari</p>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-blue-600">{{ $izin ?? 0 }}</div>
+                        <div class="text-xs text-blue-500">
+                            @php
+                                $percentage = $totalDays > 0 ? round((($izin ?? 0) / $totalDays) * 100, 1) : 0;
+                            @endphp
+                            {{ $percentage }}%
+                        </div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Sakit -->
+            <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 shadow-sm border border-red-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-thermometer-half text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">Sakit</p>
+                            <p class="text-xs text-gray-600">{{ $sakit ?? 0 }} Hari</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-red-600">{{ $sakit ?? 0 }}</div>
+                        <div class="text-xs text-red-500">
+                            @php
+                                $percentage = $totalDays > 0 ? round((($sakit ?? 0) / $totalDays) * 100, 1) : 0;
+                            @endphp
+                            {{ $percentage }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terlambat -->
+            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 shadow-sm border border-yellow-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-800 text-sm">Terlambat</p>
+                            <p class="text-xs text-gray-600">{{ $terlambat ?? 0 }} Hari</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-yellow-600">{{ $terlambat ?? 0 }}</div>
+                        <div class="text-xs text-yellow-500">
+                            @php
+                                $percentage = $totalDays > 0 ? round((($terlambat ?? 0) / $totalDays) * 100, 1) : 0;
+                            @endphp
+                            {{ $percentage }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="mt-4 bg-white rounded-xl p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-semibold text-gray-800">Tingkat Kehadiran</h3>
+                <span class="text-xs text-gray-500">
+                    @php
+                        $totalAttendance = ($hadir ?? 0) + ($izin ?? 0) + ($sakit ?? 0);
+                        $attendanceRate = $totalDays > 0 ? round(($totalAttendance / $totalDays) * 100, 1) : 0;
+                    @endphp
+                    {{ $attendanceRate }}% dari {{ $totalDays }} hari
+                </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-gradient-to-r from-[#ff040c] to-[#fb0302] h-2 rounded-full transition-all duration-300" 
+                     style="width: {{ $attendanceRate }}%"></div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0%</span>
+                <span>50%</span>
+                <span>100%</span>
             </div>
         </div>
     </div>
@@ -225,15 +291,6 @@
         </div>
     </div>
 
-    <!-- Logout Button -->
-    <div class="px-4 py-3 pb-8">
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="w-full bg-[#fb0302] text-white py-3 rounded-xl font-semibold hover:bg-[#ff040c] transition-colors">
-                Logout
-            </button>
-        </form>
-    </div>
 
 
     <script>
@@ -283,11 +340,8 @@
                 .catch(error => console.error('Error refreshing data:', error));
         }
 
-        // Load unread message count
-        function loadUnreadCount() {
-            console.log('Loading unread count...');
-            
-            // Get CSRF token safely
+        // Load unread message count for pesan badge
+        function loadPesanBadge() {
             const csrfToken = document.querySelector('meta[name="csrf-token"]');
             const headers = {};
             if (csrfToken) {
@@ -305,52 +359,31 @@
                 })
                 .then(data => {
                     const pesanBadge = document.getElementById('pesanBadge');
-                    const bellBadge = document.getElementById('bellBadge');
                     
                     if (data.unread_count > 0) {
-                        // Update pesan badge
                         if (pesanBadge) {
                             pesanBadge.textContent = data.unread_count;
                             pesanBadge.style.display = 'flex';
                         }
-                        
-                        // Update bell badge with animation
-                        if (bellBadge) {
-                            bellBadge.textContent = data.unread_count;
-                            bellBadge.style.display = 'flex';
-                        }
-                        
-                        // Add bounce animation to bell icon
-                        const bellIcon = document.getElementById('bellIcon');
-                        if (bellIcon) {
-                            bellIcon.classList.add('animate-bounce');
-                            setTimeout(() => {
-                                bellIcon.classList.remove('animate-bounce');
-                            }, 1000);
-                        }
                     } else {
-                        // Hide both badges
                         if (pesanBadge) {
                             pesanBadge.style.display = 'none';
-                        }
-                        if (bellBadge) {
-                            bellBadge.style.display = 'none';
                         }
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading unread count:', error);
+                    console.error('Error loading pesan badge:', error);
                 });
         }
 
         // Start auto-refresh
         document.addEventListener('DOMContentLoaded', function() {
-            // Load unread count immediately
-            loadUnreadCount();
+            // Load pesan badge immediately
+            loadPesanBadge();
             
             // Set up intervals
             setInterval(refreshAttendanceData, 5000);
-            setInterval(loadUnreadCount, 10000); // Refresh unread count every 10 seconds
+            setInterval(loadPesanBadge, 10000); // Refresh pesan badge every 10 seconds
         });
     </script>
 </body>

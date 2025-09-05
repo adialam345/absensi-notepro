@@ -11,20 +11,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="bg-[#ff040c] p-3 text-white">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <div class="w-6 h-6 bg-white rounded flex items-center justify-center">
-                    <div class="w-3 h-3 bg-[#ff040c] transform rotate-45"></div>
-                </div>
-                <span class="font-semibold text-sm">ABSEN PROJECT</span>
-            </div>
-            <div class="flex items-center space-x-3">
-                <i class="fas fa-bell text-lg"></i>
-                <i class="fas fa-user-circle text-xl"></i>
-            </div>
-        </div>
-    </div>
+    <x-karyawan-navbar title="Absen Masuk" subtitle="ABSEN PROJECT" />
 
     <!-- Main Content Card -->
     <div class="mx-4 mt-4 mb-6">
