@@ -85,7 +85,7 @@
                 </div>
                 
                 <button id="absenDinasLuarBtn" disabled
-                    class="w-full bg-[#ff040c] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#fb0302] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="hidden w-full bg-[#ff040c] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#fb0302] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-camera mr-2"></i><span id="absenDinasLuarButtonText">Absen Dinas Luar</span>
                 </button>
             </div>
@@ -152,7 +152,6 @@
                 tabKantor.classList.remove('text-gray-500');
                 tabDinasLuar.classList.remove('border-b-2', 'border-[#ff040c]', 'text-[#ff040c]');
                 tabDinasLuar.classList.add('text-gray-500');
-                absenBtn.classList.remove('hidden');
                 dinasLuarForm.classList.add('hidden');
             } else {
                 currentTab = 'dinas_luar';
@@ -160,7 +159,6 @@
                 tabDinasLuar.classList.remove('text-gray-500');
                 tabKantor.classList.remove('border-b-2', 'border-[#ff040c]', 'text-[#ff040c]');
                 tabKantor.classList.add('text-gray-500');
-                absenBtn.classList.add('hidden');
                 dinasLuarForm.classList.remove('hidden');
             }
             
@@ -176,12 +174,20 @@
             const alasanDinasLuar = document.getElementById('alasanDinasLuar');
             
             if (currentTab === 'kantor') {
+                // Hide dinas luar button and show kantor button
+                absenDinasLuarBtn.classList.add('hidden');
+                absenBtn.classList.remove('hidden');
+                
                 if (isReady) {
                     absenBtn.disabled = false;
                 } else {
                     absenBtn.disabled = true;
                 }
             } else {
+                // Hide kantor button and show dinas luar button
+                absenBtn.classList.add('hidden');
+                absenDinasLuarBtn.classList.remove('hidden');
+                
                 // For dinas luar, need photo, location, and reason
                 const dinasLuarReady = isReady && alasanDinasLuar.value.trim() !== '';
                 if (dinasLuarReady) {
@@ -546,6 +552,11 @@
         function updateAbsenButton() {
             const absenBtn = document.getElementById('absenBtn');
             const buttonText = document.getElementById('absenButtonText');
+            
+            // Only update if we're on kantor tab
+            if (currentTab !== 'kantor') {
+                return;
+            }
             
             if (!todayAbsensi || !todayAbsensi.has_attendance) {
                 // Belum absen sama sekali

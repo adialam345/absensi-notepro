@@ -184,7 +184,7 @@ class KaryawanController extends Controller
         $absensi = Absensi::create([
             'user_id' => $user->id,
             'tanggal' => $today,
-            'jam_masuk' => $jamSekarang->format('H:i:s'),
+            'jam_masuk' => Carbon::now()->format('H:i:s'),
             'status' => $status,
             'dinas_luar' => $isDinasLuar,
             'alasan_dinas_luar' => $isDinasLuar ? $request->alasan_dinas_luar : null,
