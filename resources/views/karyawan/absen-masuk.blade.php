@@ -666,19 +666,35 @@
                     dinas_luar: true
                 });
 
-                const response = await fetch('{{ route("karyawan.absen.masuk.post") }}', {
+                // Determine the correct route based on attendance status
+                let route = '{{ route("karyawan.absen.masuk.post") }}'; // Default to masuk
+                let requestData = {
+                    latitude: latitude,
+                    longitude: longitude,
+                    foto: currentPhotoData,
+                    alasan_dinas_luar: alasanDinasLuar,
+                    dinas_luar: true
+                };
+
+                // If user already has attendance today and hasn't clocked out, use pulang route
+                if (todayAbsensi && todayAbsensi.has_attendance && todayAbsensi.jam_masuk && !todayAbsensi.jam_pulang) {
+                    route = '{{ route("karyawan.absen.pulang") }}';
+                    // For pulang, we don't need dinas luar specific fields
+                    requestData = {
+                        latitude: latitude,
+                        longitude: longitude,
+                        foto: currentPhotoData,
+                        keterangan: alasanDinasLuar
+                    };
+                }
+
+                const response = await fetch(route, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    body: JSON.stringify({
-                        latitude: latitude,
-                        longitude: longitude,
-                        foto: currentPhotoData,
-                        alasan_dinas_luar: alasanDinasLuar,
-                        dinas_luar: true
-                    })
+                    body: JSON.stringify(requestData)
                 });
 
                 const result = await response.json();
@@ -691,17 +707,15 @@
                         icon: 'success',
                         title: 'Absensi Dinas Luar Berhasil!',
                         text: result.message,
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#ff040c'
-                    }).then(() => {
-                        // Refresh attendance data
-                        checkTodayAttendance();
-                        // Reset form
-                        document.getElementById('alasanDinasLuar').value = '';
-                        photoTaken = false;
-                        locationObtained = false;
-                        currentPhotoData = null;
-                        updateButtonStates();
+                        confirmButtonText: 'Lanjut ke Dashboard',
+                        confirmButtonColor: '#ff040c',
+                        allowOutsideClick: false,
+                        showCloseButton: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Redirect to dashboard
+                            window.location.href = '{{ route("karyawan.dashboard") }}';
+                        }
                     });
                 } else {
                     Swal.fire({

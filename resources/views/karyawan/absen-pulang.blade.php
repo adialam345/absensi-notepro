@@ -187,14 +187,20 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
             
             try {
-                const formData = new FormData(this);
+                const formData = {
+                    latitude: document.getElementById('latitude').value,
+                    longitude: document.getElementById('longitude').value,
+                    foto: document.getElementById('photoData').value,
+                    keterangan: document.querySelector('textarea[name="keterangan"]').value
+                };
                 
                 const response = await fetch('{{ route("karyawan.absen.pulang") }}', {
                     method: 'POST',
-                    body: formData,
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    }
+                    },
+                    body: JSON.stringify(formData)
                 });
                 
                 const result = await response.json();

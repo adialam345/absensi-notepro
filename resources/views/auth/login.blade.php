@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Absensi NotePro</title>
+    <title>Login Absensi ABSENSI PROJECT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -14,7 +14,7 @@
             <div class="w-16 h-16 bg-[#ff040c] rounded-full flex items-center justify-center mb-4">
                 <i class="fas fa-user-clock text-white text-2xl"></i>
             </div>
-            <div class="text-3xl font-extrabold mb-2" style="color: #ff040c;">Absensi <span style="color:#fb0302;">NotePro</span></div>
+            <div class="text-3xl font-extrabold mb-2" style="color: #ff040c;">Absensi <span style="color:#fb0302;">ABSENSI PROJECT</span></div>
             <div class="text-gray-500 text-sm">Silakan login untuk melanjutkan</div>
         </div>
         @if ($errors->any())

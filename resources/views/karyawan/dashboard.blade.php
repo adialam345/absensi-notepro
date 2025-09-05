@@ -10,7 +10,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <x-karyawan-navbar title="Dashboard" subtitle="ASRI PROJECT" />
+    <x-karyawan-navbar title="Dashboard" subtitle="ABSENSI PROJECT" />
 
     <!-- User Greeting and Work Schedule -->
     <div class="bg-white rounded-t-2xl -mt-1 p-4 shadow-sm">

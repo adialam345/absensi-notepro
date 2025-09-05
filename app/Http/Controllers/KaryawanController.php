@@ -88,7 +88,7 @@ class KaryawanController extends Controller
         if ($existingAbsensi) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda sudah absen hari ini'
+                'message' => 'Anda sudah absen masuk hari ini'
             ]);
         }
         
@@ -160,8 +160,38 @@ class KaryawanController extends Controller
             ]);
         }
         
-        // Set status - terlambat tetap dihitung hadir
+        // Set status based on work hours (check lateness for both dinas luar and regular attendance)
         $status = 'hadir';
+        
+        // Parse work hours
+        $jamKerja = explode(' - ', $user->jam_kerja ?? '08:00 - 17:00');
+        $jamMasuk = $jamKerja[0] ?? '08:00';
+        
+        // Convert to Carbon time for comparison
+        $jamMasukCarbon = Carbon::createFromFormat('H:i', $jamMasuk);
+        $jamSekarang = Carbon::now();
+        
+        // Calculate minutes late (positive = late, negative = early)
+        // diffInMinutes with false parameter: positive = late, negative = early
+        $minutesLate = $jamMasukCarbon->diffInMinutes($jamSekarang, false);
+        
+        // Log for debugging
+        \Log::info('Attendance Status Check', [
+            'user_id' => $user->id,
+            'jam_masuk_schedule' => $jamMasuk,
+            'jam_absen_actual' => $jamSekarang->format('H:i:s'),
+            'minutes_late' => $minutesLate,
+            'is_dinas_luar' => $isDinasLuar,
+            'jam_masuk_carbon' => $jamMasukCarbon->format('H:i:s'),
+            'jam_sekarang_carbon' => $jamSekarang->format('H:i:s')
+        ]);
+        
+        // Check if more than 1 hour (60 minutes) late
+        if ($minutesLate > 60) {
+            $status = 'terlambat';
+        } else {
+            $status = 'hadir'; // On time or less than 1 hour late
+        }
         
         // Handle base64 photo data
         $fotoData = $request->foto;
@@ -247,6 +277,33 @@ class KaryawanController extends Controller
                 'message' => 'Data tidak valid',
                 'errors' => $validator->errors()
             ]);
+        }
+        
+        // Check location only if not dinas luar
+        if (!$absensi->dinas_luar) {
+            $lokasiKantor = LokasiKantor::find($user->lokasi_kantor_id);
+            if (!$lokasiKantor) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lokasi kantor tidak ditemukan'
+                ]);
+            }
+            
+            // Calculate distance
+            $distance = $this->calculateDistance(
+                $request->latitude,
+                $request->longitude,
+                $lokasiKantor->latitude,
+                $lokasiKantor->longitude
+            );
+            
+            // Check if within radius
+            if ($distance > $lokasiKantor->radius) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda berada di luar area kantor. Jarak: ' . round($distance, 2) . 'm, Radius: ' . $lokasiKantor->radius . 'm'
+                ]);
+            }
         }
         
         // Handle base64 photo data
