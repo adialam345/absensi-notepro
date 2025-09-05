@@ -47,6 +47,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Export Data
     Route::get('/admin/export/karyawan', [AdminController::class, 'exportKaryawan'])->name('admin.export.karyawan');
     Route::get('/admin/export/absensi', [AdminController::class, 'exportAbsensi'])->name('admin.export.absensi');
+    Route::get('/admin/export/absensi/excel', [AdminController::class, 'exportAbsensiExcel'])->name('admin.export.absensi.excel');
+    Route::get('/admin/export/absensi/pdf', [AdminController::class, 'exportAbsensiPDF'])->name('admin.export.absensi.pdf');
     
     // Pesan Routes
     Route::get('/admin/pesan', [App\Http\Controllers\AdminPesanController::class, 'index'])->name('admin.pesan.index');

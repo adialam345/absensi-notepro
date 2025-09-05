@@ -223,7 +223,7 @@ class AdminController extends Controller
         $absensi = $query->latest('tanggal')->paginate(20);
         $karyawan = User::where('role', 'karyawan')->get();
         
-        // Hitung summary
+        // Hitung summary untuk absensi
         $summaryQuery = Absensi::query();
         if ($request->filled('month') && $request->filled('year')) {
             $summaryQuery->whereMonth('tanggal', $request->month)
@@ -237,11 +237,39 @@ class AdminController extends Controller
             $summaryQuery->where('user_id', $request->karyawan);
         }
         
+        // Hitung summary untuk izin/cuti dari tabel IzinCuti
+        $izinCutiQuery = IzinCuti::where('status', 'disetujui');
+        if ($request->filled('month') && $request->filled('year')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->whereYear('tanggal_mulai', $request->year)
+                      ->orWhere(function($q) use ($request) {
+                          $q->whereMonth('tanggal_selesai', $request->month)
+                            ->whereYear('tanggal_selesai', $request->year);
+                      });
+            });
+        } elseif ($request->filled('month')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->orWhereMonth('tanggal_selesai', $request->month);
+            });
+        } elseif ($request->filled('year')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereYear('tanggal_mulai', $request->year)
+                      ->orWhereYear('tanggal_selesai', $request->year);
+            });
+        }
+        if ($request->filled('karyawan')) {
+            $izinCutiQuery->where('user_id', $request->karyawan);
+        }
+        
         $summary = [
-            'hadir' => $summaryQuery->where('status', 'hadir')->count(),
-            'terlambat' => $summaryQuery->where('status', 'terlambat')->count(),
-            'izin' => $summaryQuery->where('status', 'izin')->count(),
-            'sakit' => $summaryQuery->where('status', 'sakit')->count(),
+            'hadir' => (clone $summaryQuery)->where('status', 'hadir')->count(),
+            'terlambat' => (clone $summaryQuery)->where('status', 'terlambat')->count(),
+            'izin' => (clone $izinCutiQuery)->where('tipe', 'izin')->count(),
+            'sakit' => (clone $izinCutiQuery)->where('tipe', 'sakit')->count(),
+            'cuti' => (clone $izinCutiQuery)->where('tipe', 'cuti')->count(),
+            'dinas_luar' => (clone $summaryQuery)->where('dinas_luar', true)->count(),
         ];
         
         return view('admin.laporan.absensi', compact('absensi', 'karyawan', 'summary'));
@@ -376,6 +404,8 @@ class AdminController extends Controller
             'Jam Masuk', 
             'Jam Pulang', 
             'Status', 
+            'Dinas Luar',
+            'Alasan Dinas Luar',
             'Keterangan',
             'Lokasi Masuk',
             'Lokasi Pulang'
@@ -388,6 +418,8 @@ class AdminController extends Controller
                 $a->jam_masuk ?? '-',
                 $a->jam_pulang ?? '-',
                 ucfirst($a->status),
+                $a->dinas_luar ? 'Ya' : 'Tidak',
+                $a->alasan_dinas_luar ?? '-',
                 $a->keterangan ?? '-',
                 $a->lokasi_masuk ?? '-',
                 $a->lokasi_pulang ?? '-'
@@ -400,6 +432,239 @@ class AdminController extends Controller
         
         return response($csv)
             ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    public function exportAbsensiExcel(Request $request)
+    {
+        // Get attendance data
+        $query = Absensi::with('user');
+        
+        // Apply same filters as the report
+        if ($request->filled('month') && $request->filled('year')) {
+            $query->whereMonth('tanggal', $request->month)
+                  ->whereYear('tanggal', $request->year);
+        } elseif ($request->filled('month')) {
+            $query->whereMonth('tanggal', $request->month);
+        } elseif ($request->filled('year')) {
+            $query->whereYear('tanggal', $request->year);
+        }
+        
+        if ($request->filled('karyawan')) {
+            $query->where('user_id', $request->karyawan);
+        }
+        
+        $absensi = $query->orderBy('tanggal', 'desc')->get();
+        
+        // Get leave data for the same period
+        $izinCutiQuery = IzinCuti::with('user')->where('status', 'disetujui');
+        
+        if ($request->filled('month') && $request->filled('year')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->whereYear('tanggal_mulai', $request->year)
+                      ->orWhere(function($q) use ($request) {
+                          $q->whereMonth('tanggal_selesai', $request->month)
+                            ->whereYear('tanggal_selesai', $request->year);
+                      });
+            });
+        } elseif ($request->filled('month')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->orWhereMonth('tanggal_selesai', $request->month);
+            });
+        } elseif ($request->filled('year')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereYear('tanggal_mulai', $request->year)
+                      ->orWhereYear('tanggal_selesai', $request->year);
+            });
+        }
+        
+        if ($request->filled('karyawan')) {
+            $izinCutiQuery->where('user_id', $request->karyawan);
+        }
+        
+        $izinCuti = $izinCutiQuery->orderBy('tanggal_mulai', 'desc')->get();
+        
+        // Create Excel content
+        $filename = 'laporan_absensi_' . date('Y-m-d') . '.xlsx';
+        
+        // For now, we'll create a CSV with Excel extension (can be improved with PhpSpreadsheet later)
+        $handle = fopen('php://temp', 'r+');
+        
+        // Header
+        fputcsv($handle, [
+            'TANGGAL', 
+            'NAMA KARYAWAN', 
+            'JAM MASUK', 
+            'JAM PULANG', 
+            'STATUS', 
+            'DINAS LUAR',
+            'ALASAN DINAS LUAR',
+            'KETERANGAN',
+            'LOKASI MASUK',
+            'LOKASI PULANG'
+        ]);
+        
+        // Attendance data
+        foreach ($absensi as $a) {
+            fputcsv($handle, [
+                $a->tanggal,
+                $a->user->name ?? 'N/A',
+                $a->jam_masuk ?? '-',
+                $a->jam_pulang ?? '-',
+                ucfirst($a->status),
+                $a->dinas_luar ? 'Ya' : 'Tidak',
+                $a->alasan_dinas_luar ?? '-',
+                $a->keterangan ?? '-',
+                $a->lokasi_masuk ?? '-',
+                $a->lokasi_pulang ?? '-'
+            ]);
+        }
+        
+        // Add empty row separator
+        fputcsv($handle, []);
+        fputcsv($handle, ['DATA CUTI/IZIN KARYAWAN']);
+        fputcsv($handle, []);
+        
+        // Leave data header
+        fputcsv($handle, [
+            'TANGGAL MULAI',
+            'TANGGAL SELESAI', 
+            'NAMA KARYAWAN',
+            'TIPE',
+            'STATUS',
+            'KETERANGAN'
+        ]);
+        
+        // Leave data
+        foreach ($izinCuti as $ic) {
+            fputcsv($handle, [
+                $ic->tanggal_mulai,
+                $ic->tanggal_selesai,
+                $ic->user->name ?? 'N/A',
+                ucfirst($ic->tipe),
+                ucfirst($ic->status),
+                $ic->keterangan ?? '-'
+            ]);
+        }
+        
+        rewind($handle);
+        $content = stream_get_contents($handle);
+        fclose($handle);
+        
+        return response($content)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    public function exportAbsensiPDF(Request $request)
+    {
+        // Get attendance data
+        $query = Absensi::with('user');
+        
+        // Apply same filters as the report
+        if ($request->filled('month') && $request->filled('year')) {
+            $query->whereMonth('tanggal', $request->month)
+                  ->whereYear('tanggal', $request->year);
+        } elseif ($request->filled('month')) {
+            $query->whereMonth('tanggal', $request->month);
+        } elseif ($request->filled('year')) {
+            $query->whereYear('tanggal', $request->year);
+        }
+        
+        if ($request->filled('karyawan')) {
+            $query->where('user_id', $request->karyawan);
+        }
+        
+        $absensi = $query->orderBy('tanggal', 'desc')->get();
+        
+        // Get leave data for the same period
+        $izinCutiQuery = IzinCuti::with('user')->where('status', 'disetujui');
+        
+        if ($request->filled('month') && $request->filled('year')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->whereYear('tanggal_mulai', $request->year)
+                      ->orWhere(function($q) use ($request) {
+                          $q->whereMonth('tanggal_selesai', $request->month)
+                            ->whereYear('tanggal_selesai', $request->year);
+                      });
+            });
+        } elseif ($request->filled('month')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->orWhereMonth('tanggal_selesai', $request->month);
+            });
+        } elseif ($request->filled('year')) {
+            $izinCutiQuery->where(function($query) use ($request) {
+                $query->whereYear('tanggal_mulai', $request->year)
+                      ->orWhereYear('tanggal_selesai', $request->year);
+            });
+        }
+        
+        if ($request->filled('karyawan')) {
+            $izinCutiQuery->where('user_id', $request->karyawan);
+        }
+        
+        $izinCuti = $izinCutiQuery->orderBy('tanggal_mulai', 'desc')->get();
+        
+        // Get summary data
+        $summaryQuery = Absensi::query();
+        if ($request->filled('month') && $request->filled('year')) {
+            $summaryQuery->whereMonth('tanggal', $request->month)
+                        ->whereYear('tanggal', $request->year);
+        } elseif ($request->filled('month')) {
+            $summaryQuery->whereMonth('tanggal', $request->month);
+        } elseif ($request->filled('year')) {
+            $summaryQuery->whereYear('tanggal', $request->year);
+        }
+        if ($request->filled('karyawan')) {
+            $summaryQuery->where('user_id', $request->karyawan);
+        }
+        
+        $izinCutiSummaryQuery = IzinCuti::where('status', 'disetujui');
+        if ($request->filled('month') && $request->filled('year')) {
+            $izinCutiSummaryQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->whereYear('tanggal_mulai', $request->year)
+                      ->orWhere(function($q) use ($request) {
+                          $q->whereMonth('tanggal_selesai', $request->month)
+                            ->whereYear('tanggal_selesai', $request->year);
+                      });
+            });
+        } elseif ($request->filled('month')) {
+            $izinCutiSummaryQuery->where(function($query) use ($request) {
+                $query->whereMonth('tanggal_mulai', $request->month)
+                      ->orWhereMonth('tanggal_selesai', $request->month);
+            });
+        } elseif ($request->filled('year')) {
+            $izinCutiSummaryQuery->where(function($query) use ($request) {
+                $query->whereYear('tanggal_mulai', $request->year)
+                      ->orWhereYear('tanggal_selesai', $request->year);
+            });
+        }
+        if ($request->filled('karyawan')) {
+            $izinCutiSummaryQuery->where('user_id', $request->karyawan);
+        }
+        
+        $summary = [
+            'hadir' => (clone $summaryQuery)->where('status', 'hadir')->count(),
+            'terlambat' => (clone $summaryQuery)->where('status', 'terlambat')->count(),
+            'izin' => (clone $izinCutiSummaryQuery)->where('tipe', 'izin')->count(),
+            'sakit' => (clone $izinCutiSummaryQuery)->where('tipe', 'sakit')->count(),
+            'cuti' => (clone $izinCutiSummaryQuery)->where('tipe', 'cuti')->count(),
+            'dinas_luar' => (clone $summaryQuery)->where('dinas_luar', true)->count(),
+        ];
+        
+        // Create HTML content for PDF
+        $html = view('admin.exports.absensi-pdf', compact('absensi', 'izinCuti', 'summary', 'request'))->render();
+        
+        // For now, return HTML (can be improved with DomPDF or similar later)
+        $filename = 'laporan_absensi_' . date('Y-m-d') . '.html';
+        
+        return response($html)
+            ->header('Content-Type', 'text/html')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 }

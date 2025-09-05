@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -61,21 +61,18 @@
         <div class="bg-white rounded-lg shadow p-6 mb-6">
             <h3 class="text-lg font-semibold mb-4" style="color: #ff040c;">Export Data</h3>
             <div class="flex flex-wrap gap-4">
-                <a href="{{ route('admin.export.absensi', request()->query()) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
-                    <i class="fas fa-file-csv mr-2"></i>Export CSV
-                </a>
-                <button onclick="exportToExcel()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                <a href="{{ route('admin.export.absensi.excel', request()->query()) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
                     <i class="fas fa-file-excel mr-2"></i>Export Excel
-                </button>
-                <button onclick="exportToPDF()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                </a>
+                <a href="{{ route('admin.export.absensi.pdf', request()->query()) }}" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
                     <i class="fas fa-file-pdf mr-2"></i>Export PDF
-                </button>
+                </a>
             </div>
         </div>
 
         <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex overflow-x-auto gap-4 mb-6 pb-4 md:grid md:grid-cols-6 md:gap-6 md:overflow-visible md:pb-0">
+            <div class="bg-white rounded-lg shadow p-6 flex-shrink-0 min-w-[200px]">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-green-100">
                         <i class="fas fa-check text-green-600 text-xl"></i>
@@ -86,7 +83,7 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-6 flex-shrink-0 min-w-[200px]">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-yellow-100">
                         <i class="fas fa-clock text-yellow-600 text-xl"></i>
@@ -97,7 +94,7 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-6 flex-shrink-0 min-w-[200px]">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-blue-100">
                         <i class="fas fa-user-times text-blue-600 text-xl"></i>
@@ -108,7 +105,7 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-white rounded-lg shadow p-6 flex-shrink-0 min-w-[200px]">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-red-100">
                         <i class="fas fa-bed text-red-600 text-xl"></i>
@@ -116,6 +113,28 @@
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Sakit</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $summary['sakit'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 flex-shrink-0 min-w-[200px]">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-orange-100">
+                        <i class="fas fa-calendar-times text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Cuti</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ $summary['cuti'] ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 flex-shrink-0 min-w-[200px]">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100">
+                        <i class="fas fa-map-marker-alt text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Dinas Luar</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ $summary['dinas_luar'] ?? 0 }}</p>
                     </div>
                 </div>
             </div>
@@ -135,6 +154,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Masuk</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jam Pulang</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dinas Luar</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                         </tr>
@@ -167,6 +187,24 @@
                                         {{ ucfirst($a->status) }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($a->dinas_luar)
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            Ya
+                                        </span>
+                                        @if($a->alasan_dinas_luar)
+                                            <div class="text-xs text-gray-500 mt-1" title="{{ $a->alasan_dinas_luar }}">
+                                                {{ Str::limit($a->alasan_dinas_luar, 30) }}
+                                            </div>
+                                        @endif
+                                    @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            <i class="fas fa-building mr-1"></i>
+                                            Tidak
+                                        </span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if($a->foto_masuk || $a->foto_pulang)
                                         <a href="{{ route('admin.absensi.foto', $a->id) }}" 
@@ -184,7 +222,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
                                     Tidak ada data absensi untuk periode yang dipilih.
                                 </td>
                             </tr>
@@ -195,16 +233,5 @@
         </div>
     </div>
 
-    <script>
-        function exportToExcel() {
-            // Implementasi export ke Excel
-            alert('Fitur export Excel akan segera tersedia');
-        }
-
-        function exportToPDF() {
-            // Implementasi export ke PDF
-            alert('Fitur export PDF akan segera tersedia');
-        }
-    </script>
 </body>
 </html>
